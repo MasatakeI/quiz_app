@@ -1,0 +1,78 @@
+/* 外枠のコンテナ */
+.result-summary {
+  margin: 40px 0 !important;
+}
+
+/* 各問題のカード */
+.result-card {
+  background-color: #ffffff;
+  border: none !important; /* 枠線を消してシャドウで表現 */
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 20px !important;
+  transition: transform 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.result-card:hover {
+  transform: translateY(-4px); /* 軽く浮かせて視認性アップ */
+}
+
+/* 問題文のデザイン */
+.result-question {
+  color: #2d3748;
+  background-color: #f7fafc; /* 背景を薄くして文字を濃くする */
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  border-left: 4px solid #cbd5e0;
+}
+
+/* 回答リスト全体 */
+.result-answers {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 各回答の共通スタイル */
+.result-answer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* 正解のスタイル（自分が選んでいてもいなくても正解を表示） */
+.result-answer.correct {
+  border: 1px solid #48bb78;
+  background-color: #f0fff4;
+  color: #22543d;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.15);
+}
+
+/* 間違えて選択した回答のスタイル */
+.result-answer.selected {
+  border: 1px solid #f56565;
+  background-color: #fff5f5;
+  color: #822727;
+  font-weight: 700;
+}
+
+/* 記号（◯や×）の装飾 */
+.result-answer::after {
+  font-size: 1.2rem;
+  font-weight: bold;
+}

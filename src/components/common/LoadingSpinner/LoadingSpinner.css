@@ -1,0 +1,31 @@
+/* 中央寄せ用のコンテナ */
+.loader-container {
+  position: fixed; /* 常に画面中央に固定 */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center; /* 縦方向中央 */
+  justify-content: center; /* 横方向中央 */
+  background-color: rgba(255, 255, 255, 0.6); /* 背景を半透明に（任意） */
+  backdrop-filter: blur(4px); /* ぼかしでモダン感 */
+  z-index: 9999; /* 前面に出す */
+}
+
+/* モダンなグラデーションスピナー */
+.loader {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #4f46e5, #818cf8, #c7d2fe, #4f46e5);
+  mask: radial-gradient(farthest-side, transparent 60%, black 61%);
+  -webkit-mask: radial-gradient(farthest-side, transparent 60%, black 61%);
+  animation: rotate 1.1s linear infinite;
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

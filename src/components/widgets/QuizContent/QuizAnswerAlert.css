@@ -1,0 +1,6 @@
+.answer-message-container {
+  margin: 15px 0;
+  display: flex;
+  justify-content: baseline;
+  gap: 10px;
+}

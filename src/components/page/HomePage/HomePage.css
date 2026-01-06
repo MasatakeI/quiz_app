@@ -1,0 +1,72 @@
+/* HomePage.css */
+
+/* 全体のレイアウト調整 */
+.home-page {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 2rem;
+  text-align: center;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans", sans-serif;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* タイトルの装飾 */
+.home-page h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 3rem;
+  position: relative;
+  display: inline-block;
+}
+
+.home-page h1::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+/* セレクションセクション（Grid部分） */
+.select-sections {
+  margin-top: 2rem !important;
+  margin-bottom: 3rem !important;
+}
+
+/* ボタン周りのレイアウト */
+.quiz-start-button {
+  margin-top: 3rem;
+  /* display: flex;
+  justify-content: center;
+  transition: transform 0.2s ease; */
+}
+
+/* .quiz-start-button:hover {
+  transform: translateY(-3px);
+} */
+
+/* エラーメッセージのラッパー（Snackbarの位置調整が必要な場合） */
+.error-message {
+  height: 0;
+  overflow: visible;
+}
+
+/* スマホ対応の微調整 */
+@media (max-width: 600px) {
+  .home-page {
+    margin: 20px;
+    padding: 1.5rem;
+  }
+
+  .home-page h1 {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,16 @@
+.answer-alert {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  /* align-items: center;
+  width: 100%; */
+  border-radius: 10px !important;
+  white-space: pre-line;
+}
+
+.answer-alert-title {
+  text-align: center;
+  width: 100%;
+  font-weight: bold;
+}
