@@ -1,7 +1,7 @@
 /* 基本スタイル */
 .button {
   width: 100%;
-  padding: 12px 5px;
+  padding: 12px 4px;
   font-size: 1rem;
   font-weight: 600; /* 太すぎず読みやすい太さ */
   color: #fff;
@@ -31,7 +31,7 @@
 
 /* 無効化状態：背景を薄いグレーに */
 .button:disabled {
-  background-color: #e2e8f0 !important;
+  background-color: #d4d9e0 !important;
   color: #6d7b8f !important;
   cursor: not-allowed;
   transform: none;
