@@ -2,6 +2,12 @@
 
 ## 概要
 
+## スクリーンショット
+
+![ホーム画面](./assets/screenshot-home.png)
+![クイズ画面](./assets/screenshot-quiz.png)
+![結果画面](./assets/screenshot-result.png)
+
 Open Trivia Database (OpenTDB) を利用したクイズアプリです。  
 ジャンル・タイプ・難易度・問題数を選択し、クイズに挑戦できます。
 
