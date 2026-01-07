@@ -11,7 +11,7 @@ Open Trivia Database（OpenTDB）を利用したクイズアプリです。ジ�
 ## デモ / リンク
 
 - [🚀 実際のアプリはこちら](https://quiz-app-zeta-pearl.vercel.app/)
-- ![デモ](./assets/gif_latest.gif)
+- [デモ](./assets/gif_latest.gif)
 
 ---
 
