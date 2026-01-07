@@ -10,8 +10,8 @@ Open Trivia Database（OpenTDB）を利用したクイズアプリです。ジ�
 
 ## デモ / リンク
 
-- **Live Demo**：![ライブデモを見る](https://quiz-app-zeta-pearl.vercel.app/)
-- **デモ GIF**：![クイズアプリのデモ](./assets/gif_latest.gif)
+- [🚀 実際のアプリはこちら](https://quiz-app-zeta-pearl.vercel.app/)
+- ![デモ](./assets/gif_latest.gif)
 
 ---
 
