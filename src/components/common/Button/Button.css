@@ -8,8 +8,8 @@
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  /* transition: all 0.2s ease; */
+  /* transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,10 +31,11 @@
 
 /* 無効化状態：背景を薄いグレーに */
 .button:disabled {
-  background-color: #d4d9e0 !important;
-  color: #6d7b8f !important;
+  background-color: #d4d9e0;
+  color: #6d7b8f;
   cursor: not-allowed;
   transform: none;
+  transition: none;
 }
 
 /* --- バリエーション：彩度を抑えた落ち着いたトーン --- */

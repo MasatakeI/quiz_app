@@ -27,6 +27,7 @@
   color: #666;
   font-size: 14px;
   transition: color 0.2s;
+  cursor: pointer;
 }
 
 .footer-links a:hover {

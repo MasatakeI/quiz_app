@@ -68,9 +68,9 @@ Fetcher (API)
 - Custom Hook：画面ロジック・副作用を集約
 - Redux selector / dispatch は Hook 経由のみ
 
-  widgets/
+  <!-- widgets/
   ├─ QuizContent/useQuizContent.js
-  └─ QuizResult/useQuizResult.js
+  └─ QuizResult/useQuizResult.js -->
 
 ---
 
