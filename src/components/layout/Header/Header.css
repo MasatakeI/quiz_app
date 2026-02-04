@@ -21,16 +21,18 @@
 .logo {
   text-decoration: none;
   color: #fff;
+  background-color: inherit;
+  border: none;
   font-size: 2rem;
   font-weight: bold;
   padding-left: 16px;
   letter-spacing: 0.1rem;
-
-  transition: all ease 0.3s;
+  cursor: pointer;
+  transition: all ease 0.15s;
 }
 
 .logo:hover {
-  transform: translateY(-1px) scale(1.02);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {

@@ -14,7 +14,7 @@ const QuizContent = () => {
   const {
     selectAnswer,
     handleNext,
-    handleReload,
+    handleGoHome,
     quizResult,
     canPost,
     answers,
@@ -43,7 +43,6 @@ const QuizContent = () => {
         currentIndex={currentIndex}
         numberOfCorrects={numberOfCorrects}
         numberOfIncorrects={numberOfIncorrects}
-        onReload={handleReload}
       />
 
       <QuizAnswerAlert quizResult={quizResult} onNext={handleNext} />
@@ -57,7 +56,7 @@ const QuizContent = () => {
         correctAnswer={quizResult?.correct}
       />
 
-      <BackToHomeLink />
+      <BackToHomeLink linkHandler={handleGoHome} />
     </div>
   );
 };

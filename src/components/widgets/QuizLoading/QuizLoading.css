@@ -1,0 +1,26 @@
+.quiz-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-height: 60vh;
+  text-align: center;
+  gap: 20px;
+}
+
+.quiz-loading-button-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.quiz-loading p {
+  color: #e53e3e;
+  font-weight: 600;
+  max-width: 400px;
+  line-height: 1.6;
+
+  max-width: 400px; /* 最大幅を制限 */
+  margin-left: auto; /* 左の余白を自動調整 */
+  margin-right: auto; /* 右の余白を自動調整 */
+}

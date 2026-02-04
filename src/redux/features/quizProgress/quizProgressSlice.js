@@ -3,6 +3,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { judgeCorrectAnswer } from "../../../models/QuizModel";
 import { fetchQuizzesAsync } from "../quizContent/quizContentThunks";
+import { resetQuizContent } from "../quizContent/quizContentSlice";
 
 export const progressInitialState = {
   currentIndex: 0,
@@ -39,18 +40,18 @@ const quizProgressSlice = createSlice({
         isCorrect,
       });
     },
+
+    resetProgress: () => progressInitialState,
   },
 
   extraReducers: (builder) => {
-    builder.addCase(fetchQuizzesAsync.fulfilled, (state, action) => {
-      state.currentIndex = 0;
-      state.numberOfCorrects = 0;
-      state.numberOfIncorrects = 0;
-      state.userAnswers = [];
-    });
+    builder
+      .addCase(fetchQuizzesAsync.pending, () => progressInitialState)
+      .addCase(resetQuizContent, () => progressInitialState);
   },
 });
 
-export const { goToNextQuiz, submitAnswer } = quizProgressSlice.actions;
+export const { goToNextQuiz, submitAnswer, resetProgress } =
+  quizProgressSlice.actions;
 
 export default quizProgressSlice.reducer;

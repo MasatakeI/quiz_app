@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./Header.css";
 
-import { Link } from "react-router";
 import Tooltip from "@mui/material/Tooltip";
 
+import { useNavigationHelper } from "@/hooks/useNavigationHelper";
+
 const Header = () => {
+  const { handleGoHome } = useNavigationHelper();
+
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -19,9 +22,13 @@ const Header = () => {
   return (
     <div className={`header ${isScrolled ? "scrolled" : ""}`}>
       <Tooltip title="ホームへ戻る">
-        <Link to="/" className="logo" aria-label="ホームへ戻る">
+        <button
+          onClick={handleGoHome}
+          className="logo"
+          aria-label="ホームへ戻る"
+        >
           クイズアプリ
-        </Link>
+        </button>
       </Tooltip>
     </div>
   );

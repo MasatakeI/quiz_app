@@ -1,7 +1,7 @@
 // src/components/widgets/QuizResult/QuizResult
 
 import React from "react";
-import "./QuizResult.css";
+// import "./QuizResult.css";
 
 import { useQuizResult } from "./useQuizResult";
 
@@ -13,12 +13,13 @@ const QuizResult = () => {
   const {
     quizTitle,
     numberOfCorrects,
-    currentDifficulty,
+    numberOfIncorrects,
+
     handleGoHome,
     handleRetry,
     amount,
     difficulty,
-    type,
+
     userAnswers,
     indexMap,
     difficultyMap,
@@ -30,6 +31,7 @@ const QuizResult = () => {
       <QuizResultView
         quizTitle={quizTitle}
         numberOfCorrects={numberOfCorrects}
+        numberOfIncorrects={numberOfIncorrects}
         amount={amount}
         difficulty={difficulty}
         difficultyMap={difficultyMap}

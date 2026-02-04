@@ -3,21 +3,23 @@
 import React from "react";
 import "./BackToHomeLink.css";
 
-import { Link } from "react-router-dom";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faH, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 
 import Tooltip from "@mui/material/Tooltip";
 
-const BackToHomeLink = () => {
+const BackToHomeLink = ({ linkHandler }) => {
   return (
     <div className="link-container">
       <hr />
       <Tooltip title="ホームへ戻る">
-        <Link className="link" to={"/"}>
+        <button
+          className="link-button"
+          onClick={linkHandler}
+          aria-label="ホームへ戻る"
+        >
           <FontAwesomeIcon icon={faHome} />
-        </Link>
+        </button>
       </Tooltip>
     </div>
   );

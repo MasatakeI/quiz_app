@@ -13,7 +13,9 @@ const quizContentSlice = createSlice({
   name: "quizContent",
   initialState: contentInitialState,
 
-  reducers: {},
+  reducers: {
+    resetQuizContent: () => contentInitialState,
+  },
 
   extraReducers: (builder) => {
     builder
@@ -33,5 +35,7 @@ const quizContentSlice = createSlice({
       });
   },
 });
+
+export const { resetQuizContent } = quizContentSlice.actions;
 
 export default quizContentSlice.reducer;

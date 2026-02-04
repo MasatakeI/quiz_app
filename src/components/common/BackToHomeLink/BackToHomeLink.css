@@ -1,19 +1,21 @@
-.link {
-  color: #888;
-  white-space: nowrap;
-  /* align-items: center;
-  justify-content: center;
-  display: flex; */
+.link-button {
+  background-color: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px; /* クリックエリアを広げる */
+  color: #6d7b8f; /* 落ち着いたグレー。hoverで青くする */
+  font-size: 1.2rem; /* アイコンを少し見やすく */
 
-  text-decoration: none;
-  font-size: 0.9rem;
-
-  transition: all ease 0.3s;
+  transition: all ease 0.15s;
 }
 
-.link:hover {
+.link-button:hover {
   color: #3a6ea5;
-  font-size: 1rem;
+  transform: translateY(-2px);
+}
+
+.link-button:active {
+  transform: scale(0.95);
 }
 
 .link-container {

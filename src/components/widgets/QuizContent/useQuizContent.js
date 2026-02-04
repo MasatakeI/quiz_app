@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
 
 import {
   goToNextQuiz,
+  resetProgress,
   submitAnswer,
 } from "@/redux/features/quizProgress/quizProgressSlice";
 
@@ -23,14 +23,17 @@ import {
 import { useParams, useSearchParams } from "react-router";
 import { getQuizTitle } from "@/constants/quizCategories";
 
+import { useNavigationHelper } from "@/hooks/useNavigationHelper";
+
 export const useQuizContent = () => {
   const dispatch = useDispatch();
+
+  const { handleGoHome } = useNavigationHelper();
 
   const [params] = useSearchParams();
   const { category } = useParams();
   const type = params.get("type");
   const amount = params.get("amount");
-  const difficulty = params.get("difficulty");
 
   const currentQuiz = useSelector(selectCurrentQuiz);
 
@@ -55,18 +58,11 @@ export const useQuizContent = () => {
 
   const indexMap = ["A", "B", "C", "D"];
 
-  const answers = type === "multiple" ? shuffledAnswers : ["True", "False"];
-
-  const handleReload = () => {
-    dispatch(
-      fetchQuizzesAsync({
-        category,
-        difficulty,
-        amount,
-        type,
-      }),
-    );
-  };
+  const answers = currentQuiz
+    ? type === "multiple"
+      ? shuffledAnswers
+      : ["True", "False"]
+    : [];
 
   const selectAnswer = (answer) => {
     if (!canPost) return;
@@ -97,7 +93,8 @@ export const useQuizContent = () => {
   return {
     handleNext,
     selectAnswer,
-    handleReload,
+    handleGoHome,
+
     quizResult,
     canPost,
     currentQuiz,

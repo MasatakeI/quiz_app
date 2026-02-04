@@ -5,6 +5,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import {
   selectNumberOfCorrects,
+  selectNumberOfIncorrects,
   selectTransilateCurrentDifficulty,
   selectUserAnswers,
 } from "@/redux/features/quizProgress/quizProgressSelector";
@@ -12,12 +13,16 @@ import {
 import { getQuizTitle } from "../../../constants/quizCategories";
 import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
 
+import { useNavigationHelper } from "@/hooks/useNavigationHelper";
+
 export const useQuizResult = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+
   const { category } = useParams();
+  const { handleGoHome } = useNavigationHelper();
 
   const numberOfCorrects = useSelector(selectNumberOfCorrects);
+  const numberOfIncorrects = useSelector(selectNumberOfIncorrects);
   const userAnswers = useSelector(selectUserAnswers);
   const currentDifficulty = useSelector(selectTransilateCurrentDifficulty);
 
@@ -42,10 +47,6 @@ export const useQuizResult = () => {
 
   const getType = typeMap[type];
 
-  const handleGoHome = () => {
-    navigate("/");
-  };
-
   const handleRetry = async () => {
     dispatch(fetchQuizzesAsync({ category, type, difficulty, amount }));
   };
@@ -55,6 +56,7 @@ export const useQuizResult = () => {
     currentDifficulty,
     userAnswers,
     numberOfCorrects,
+    numberOfIncorrects,
     handleGoHome,
     handleRetry,
     amount,

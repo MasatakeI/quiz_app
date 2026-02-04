@@ -3,6 +3,7 @@ import React from "react";
 const QuizResultView = ({
   quizTitle,
   numberOfCorrects,
+  numberOfIncorrects,
   amount,
   getType,
   difficultyMap,
@@ -12,6 +13,7 @@ const QuizResultView = ({
     <>
       <h1>{quizTitle}クイズ 結果</h1>
       <h2>正解数 {numberOfCorrects}問</h2>
+      <h2>誤答数 {numberOfIncorrects}問</h2>
 
       <div className="selected-conditions">
         <div>問題数 {amount}</div>

@@ -1,6 +1,5 @@
 import React from "react";
 import "./QuizContentView.css";
-import QuizEmptyState from "./QuizEmptyState";
 
 const QuizContentView = ({
   amount,
@@ -9,14 +8,10 @@ const QuizContentView = ({
   currentQuiz,
   numberOfCorrects,
   numberOfIncorrects,
-  onReload,
   title,
   getType,
 }) => {
-  if (!currentQuiz) {
-    return <QuizEmptyState onReload={onReload} />;
-  }
-
+  if (!currentQuiz) return null;
   return (
     <>
       <h1>{title}クイズ</h1>
