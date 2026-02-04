@@ -13,10 +13,8 @@ import store from "../src/redux/store";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <HashRouter>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </HashRouter>
-  </StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </StrictMode>,
 );

@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchQuizzesAsync } from "../../../redux/features/quizContent/quizContentSlice";
+import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
 
 import {
   goToNextQuiz,
   submitAnswer,
-} from "../../../redux/features/quizProgress/quizProgressSlice";
-import { judgeCorrectAnswer } from "../../../models/QuizModel";
+} from "@/redux/features/quizProgress/quizProgressSlice";
+
+import { judgeCorrectAnswer } from "@/models/QuizModel";
 
 import {
   selectShuffledAnswers,
@@ -17,10 +18,10 @@ import {
   selectNumberOfCorrects,
   selectNumberOfIncorrects,
   selectCurrentQuiz,
-} from "../../../redux/selectors/quizProgress/quizProgressSelector";
+} from "@/redux/features/quizProgress/quizProgressSelector";
 
 import { useParams, useSearchParams } from "react-router";
-import { getQuizTitle } from "../../../constants/quizCategories";
+import { getQuizTitle } from "@/constants/quizCategories";
 
 export const useQuizContent = () => {
   const dispatch = useDispatch();
@@ -40,8 +41,8 @@ export const useQuizContent = () => {
   const numberOfCorrects = useSelector(selectNumberOfCorrects);
   const numberOfIncorrects = useSelector(selectNumberOfIncorrects);
 
-  const [answerMessage, setAnswerMessage] = useState(null);
   const [canPost, setCanPost] = useState(true);
+  const [quizResult, setQuizResult] = useState(null);
 
   const title = getQuizTitle(category);
 
@@ -63,7 +64,7 @@ export const useQuizContent = () => {
         difficulty,
         amount,
         type,
-      })
+      }),
     );
   };
 
@@ -72,13 +73,12 @@ export const useQuizContent = () => {
     setCanPost(false);
     const isCorrect = judgeCorrectAnswer(currentQuiz, answer);
 
-    if (isCorrect) {
-      setAnswerMessage(`正解! ${currentQuiz.correctAnswer}`);
-    } else {
-      setAnswerMessage(
-        `不正解... 選択:${answer}  正解:${currentQuiz.correctAnswer}`
-      );
-    }
+    setQuizResult({
+      isCorrect,
+      selected: answer,
+      correct: currentQuiz.correctAnswer,
+      message: isCorrect ? `正解! ` : `不正解...`,
+    });
 
     const allAnswers = [
       currentQuiz.correctAnswer,
@@ -91,14 +91,14 @@ export const useQuizContent = () => {
   const handleNext = () => {
     dispatch(goToNextQuiz());
     setCanPost(true);
-    setAnswerMessage(null);
+    setQuizResult(null);
   };
 
   return {
     handleNext,
     selectAnswer,
     handleReload,
-    answerMessage,
+    quizResult,
     canPost,
     currentQuiz,
 

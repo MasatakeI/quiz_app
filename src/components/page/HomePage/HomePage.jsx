@@ -4,8 +4,7 @@ import React from "react";
 import "./HomePage.css";
 
 import Selection from "../../common/Selection/Selection";
-import SimpleSnackbar from "../../common/SimpleSnackbar/SimpleSnackbar";
-import Button from "../../common/Button/Button";
+import Button from "@/components/common/Button/Button";
 
 import { useHomePage } from "./useHomePage";
 
@@ -13,8 +12,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 
 const HomePage = () => {
-  const { items, handleStart, errorMessage, snackbarOpen, closeSnackbar } =
-    useHomePage();
+  const { items, handleStart } = useHomePage();
 
   return (
     <div className="home-page">
@@ -30,20 +28,13 @@ const HomePage = () => {
                   onChange={(e) => item.onChange(e.target.value)}
                   array={item.array}
                   disabled={item.disabled}
+                  error={item.error}
                 />
               </Grid>
             );
           })}
         </Grid>
       </Box>
-
-      <div className="error-message">
-        <SimpleSnackbar
-          isOpen={snackbarOpen}
-          onClose={closeSnackbar}
-          message={errorMessage}
-        />
-      </div>
 
       <div className="quiz-start-button">
         <Button onClickHandler={handleStart}>クイズスタート</Button>

@@ -1,19 +1,7 @@
 // src/redux/features/quizContent/quizContentSlice.js
 
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createQuizzes } from "../../../models/QuizModel";
-
-export const fetchQuizzesAsync = createAsyncThunk(
-  "quizContent/fetchQuizzes",
-  async ({ category, type, difficulty, amount }, { rejectWithValue }) => {
-    try {
-      const quizzes = await createQuizzes(category, type, difficulty, amount);
-      return quizzes;
-    } catch (error) {
-      return rejectWithValue("fetch失敗(Thunk)");
-    }
-  }
-);
+import { createSlice } from "@reduxjs/toolkit";
+import { fetchQuizzesAsync } from "./quizContentThunks";
 
 export const contentInitialState = {
   isLoading: false,
@@ -41,16 +29,9 @@ const quizContentSlice = createSlice({
       })
       .addCase(fetchQuizzesAsync.rejected, (state, action) => {
         state.isLoading = false;
-
         state.fetchError = action.payload ?? "不明なエラー";
       });
   },
 });
-
-export const selectQuizContent = (state) => state.quizContent;
-
-export const selectIsLoading = (state) => state.quizContent.isLoading;
-export const selectAllQuizzes = (state) => state.quizContent.quizzes;
-export const selectFetchError = (state) => state.quizContent.fetchError;
 
 export default quizContentSlice.reducer;

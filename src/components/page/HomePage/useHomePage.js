@@ -4,15 +4,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { getAmounts, getCategories, getDifficulties, types } from "./constants";
 import {
+  selectSettingError,
   selectSettingsAmount,
   selectSettingsCategory,
   selectSettingsDifficulty,
   selectSettingsType,
+} from "@/redux/features/quizSettings/quizSettingsSelector";
+
+import {
   setQuizSettings,
+  setSettingsError,
   updateSettings,
-} from "../../../redux/features/quizSettings/quizSettingsSlice";
-import { useMemo, useState } from "react";
-import { validateQuizSettings } from "./validation";
+} from "@/redux/features/quizSettings/quizSettingsSlice";
+
+import { useMemo } from "react";
+import { validateQuizSettings } from "@/models/QuizModel";
+import { showSnackbar } from "@/redux/features/snackbar/snackbarSlice";
 
 export const useHomePage = () => {
   const dispatch = useDispatch();
@@ -20,86 +27,82 @@ export const useHomePage = () => {
 
   const type = useSelector(selectSettingsType);
   const categories = getCategories();
-
   const difficulties = getDifficulties(type);
-
   const amounts = getAmounts(type);
+
   const difficulty = useSelector(selectSettingsDifficulty);
   const category = useSelector(selectSettingsCategory);
   const amount = useSelector(selectSettingsAmount);
-
-  const [errorMessage, setErrorMessage] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const settingError = useSelector(selectSettingError);
 
   const items = useMemo(
     () => [
       {
+        key: "category",
         label: "ジャンル",
         value: category,
         onChange: (v) =>
           dispatch(updateSettings({ key: "category", value: v })),
         array: categories,
+        error: settingError?.field === "category",
       },
       {
+        key: "type",
         label: "タイプ",
         value: type,
         onChange: (v) => {
           dispatch(updateSettings({ key: "type", value: v }));
           dispatch(
-            updateSettings({ key: "amount", value: v === "boolean" ? 5 : 10 })
+            updateSettings({ key: "amount", value: v === "boolean" ? 5 : 10 }),
           );
         },
         array: types,
+        error: settingError?.field === "type",
       },
       {
+        key: "difficulty",
         label: "レベル",
         value: difficulty,
         onChange: (v) =>
           dispatch(updateSettings({ key: "difficulty", value: v })),
         array: difficulties,
+        error: settingError?.field === "difficulty",
       },
       {
+        key: "amount",
         label: "問題数",
         value: amount,
         onChange: (v) => dispatch(updateSettings({ key: "amount", value: v })),
         array: amounts,
         disabled: type === "boolean",
+        error: settingError?.field === "amount",
       },
     ],
-    [dispatch, category, type, difficulty, amount]
+    [dispatch, category, type, difficulty, amount, settingError?.field],
   );
 
   const handleStart = () => {
-    setErrorMessage("");
-    const finalAmount = type === "boolean" ? 5 : amount;
+    const settingValues = { category, type, difficulty, amount };
 
-    const error = validateQuizSettings(category, type, difficulty, amount);
+    try {
+      validateQuizSettings(settingValues);
+      const finalAmount = type === "boolean" ? 5 : amount;
 
-    if (error) {
-      setErrorMessage(error);
-      setSnackbarOpen(true);
-      return;
+      dispatch(setQuizSettings(settingValues));
+
+      navigate(
+        `/quiz/${category}?type=${type}&difficulty=${difficulty}&amount=${finalAmount}`,
+      );
+    } catch (error) {
+      dispatch(
+        setSettingsError({ message: error.message, field: error.field }),
+      );
+      dispatch(showSnackbar(error.message));
     }
-
-    dispatch(
-      setQuizSettings({
-        category,
-        type,
-        difficulty,
-        amount,
-      })
-    );
-
-    navigate(
-      `/quiz/${category}?type=${type}&difficulty=${difficulty}&amount=${finalAmount}`
-    );
   };
 
   return {
     items,
     handleStart,
-    errorMessage,
-    snackbarOpen,
-    closeSnackbar: () => setSnackbarOpen(false),
   };
 };

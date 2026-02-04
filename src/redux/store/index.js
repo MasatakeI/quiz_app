@@ -2,16 +2,13 @@
 
 import { configureStore } from "@reduxjs/toolkit";
 
-import quizContentReducer from "../features/quizContent/quizContentSlice";
-import quizProgressReducer from "../features/quizProgress/quizProgressSlice";
-import quizSettingsReducer from "../features/quizSettings/quizSettingsSlice";
+import { rootReducer } from "./rootReducer";
+import { snackbarMiddleware } from "../middleware/snackbarMiddleware";
 
 const store = configureStore({
-  reducer: {
-    quizContent: quizContentReducer,
-    quizProgress: quizProgressReducer,
-    quizSettings: quizSettingsReducer,
-  },
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(snackbarMiddleware),
 });
 
 export default store;

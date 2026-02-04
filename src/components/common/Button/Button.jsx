@@ -8,14 +8,20 @@ const Button = ({
   onClickHandler,
   variant = "primary",
   clickable = true,
+  colorStatus,
 }) => {
-  const buttonClass = `button button-${variant}`;
+  const baseClass = "button";
+  const variantClass = `button button-${variant}`;
+  const statusClass = colorStatus ? `button-status-${colorStatus}` : "";
+  const classes = [baseClass, variantClass, statusClass];
+
+  const buttonClass = classes.filter(Boolean).join(" ");
 
   return (
     <button
       className={buttonClass}
       onClick={onClickHandler}
-      disabled={!clickable}
+      disabled={!clickable && !colorStatus}
     >
       {children}
     </button>

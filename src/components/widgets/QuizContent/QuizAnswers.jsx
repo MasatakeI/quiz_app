@@ -5,14 +5,31 @@ import Button from "../../common/Button/Button";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 
-const QuizAnswers = ({ shuffledAnswers, onSelect, canPost, indexMap }) => {
+const QuizAnswers = ({
+  shuffledAnswers,
+  onSelect,
+  canPost,
+  indexMap,
+  selectedAnswer,
+  correctAnswer,
+}) => {
   const answers = shuffledAnswers.map((answer, index) => {
+    let status = null;
+    if (!canPost) {
+      if (answer === correctAnswer) {
+        status = "correct";
+      } else if (answer === selectedAnswer) {
+        status = "incorrect";
+      }
+    }
+
     return (
       <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={index} className="answer">
         <Button
-          variant="secondary"
+          // variant="secondary"
           onClickHandler={() => onSelect(answer)}
           clickable={canPost}
+          colorStatus={status}
         >
           {indexMap[index]}. {answer}
         </Button>

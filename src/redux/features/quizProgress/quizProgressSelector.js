@@ -1,7 +1,7 @@
 // src/redux/selectors/quizProgress/quizProgressSelector.js
 
 import { createSelector } from "@reduxjs/toolkit";
-import { selectAllQuizzes } from "../../features/quizContent/quizContentSlice";
+import { selectAllQuizzes } from "../quizContent/quizContentSelector";
 import {
   shuffleAnswers,
   translateCurrentDifficulty,
@@ -18,7 +18,7 @@ export const selectCurrentQuiz = createSelector(
   [selectAllQuizzes, selectCurrentIndex],
   (quizzes, currentIndex) => {
     return quizzes[currentIndex];
-  }
+  },
 );
 
 export const selectShuffledAnswers = createSelector(
@@ -29,7 +29,7 @@ export const selectShuffledAnswers = createSelector(
     }
 
     return shuffleAnswers(currentQuiz);
-  }
+  },
 );
 export const selectTransilateCurrentDifficulty = createSelector(
   [selectCurrentQuiz],
@@ -39,12 +39,12 @@ export const selectTransilateCurrentDifficulty = createSelector(
     }
 
     return translateCurrentDifficulty(currentQuiz);
-  }
+  },
 );
 
 export const selectQuizFinished = createSelector(
   [selectAllQuizzes, selectCurrentIndex],
   (quizzes, currentIndex) => {
     return quizzes.length > 0 && currentIndex >= quizzes.length;
-  }
+  },
 );

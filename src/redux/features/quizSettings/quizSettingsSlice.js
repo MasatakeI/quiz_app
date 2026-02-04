@@ -7,6 +7,7 @@ export const settingsInitialState = {
   type: "",
   difficulty: "",
   amount: "",
+  settingError: { message: "", field: "" },
 };
 
 const quizSettingsSlice = createSlice({
@@ -15,29 +16,36 @@ const quizSettingsSlice = createSlice({
 
   reducers: {
     setQuizSettings: (state, action) => {
-      return { ...state, ...action.payload };
+      return {
+        ...state,
+        ...action.payload,
+        settingError: settingsInitialState.settingError,
+      };
     },
 
-    resetQuizSettings: (state, action) => {
-      return settingsInitialState;
-    },
+    resetQuizSettings: () => settingsInitialState,
 
     updateSettings: (state, action) => {
       const { key, value } = action.payload;
-      state[key] = value;
+      if (key in state) {
+        state[key] = value;
+        if (state.settingError?.field === key) {
+          state.settingError = settingsInitialState.settingError;
+        }
+      }
+    },
+
+    setSettingsError: (state, action) => {
+      state.settingError = action.payload;
     },
   },
 });
 
-export const selectQuizSettings = (state) => state.quizSettings;
-
-export const selectSettingsCategory = (state) => state.quizSettings.category;
-export const selectSettingsType = (state) => state.quizSettings.type;
-export const selectSettingsDifficulty = (state) =>
-  state.quizSettings.difficulty;
-export const selectSettingsAmount = (state) => state.quizSettings.amount;
-
-export const { setQuizSettings, resetQuizSettings, updateSettings } =
-  quizSettingsSlice.actions;
+export const {
+  setQuizSettings,
+  resetQuizSettings,
+  updateSettings,
+  setSettingsError,
+} = quizSettingsSlice.actions;
 
 export default quizSettingsSlice.reducer;

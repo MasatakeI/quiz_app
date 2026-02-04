@@ -3,6 +3,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+import path from "path";
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -17,5 +19,11 @@ export default defineConfig({
     globals: true, // expect などを global で使えるようにする
     environment: "jsdom", // ブラウザ環境をシミュレート
     setupFiles: ["./src/setupTests.js"], // 初期設定ファイルを指定
+  },
+
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
 });

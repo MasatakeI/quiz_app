@@ -8,8 +8,8 @@
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  /* transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
-  transition: all 0.2s ease;
+
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,7 +60,18 @@
   background-color: #4a5568;
 }
 
-/* 選択中のスタイル：枠線を追加して明示 */
-.button-active {
-  box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(90, 125, 154, 0.4);
+.button-status-correct {
+  background-color: #4caf50 !important;
+  color: white !important;
+  opacity: 1 !important; /* disabledでもくっきり見せる */
 }
+.button-status-incorrect {
+  background-color: #f44336 !important;
+  color: white !important;
+  opacity: 1 !important;
+}
+
+/* .button:disabled:not(.button-status-correct):not(.button-status-incorrect) {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+} */

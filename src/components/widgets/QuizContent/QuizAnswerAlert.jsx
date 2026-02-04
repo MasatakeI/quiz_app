@@ -3,20 +3,16 @@ import "./QuizAnswerAlert.css";
 import Button from "../../common/Button/Button";
 import AnswerAlert from "../../common/AnswerAlert/AnswerAlert";
 
-const QuizAnswerAlert = ({ answerMessage, onNext }) => {
+const QuizAnswerAlert = ({ quizResult, onNext }) => {
+  if (!quizResult) return;
+
   return (
     <div className="answer-message-container">
-      {answerMessage && (
-        <>
-          <AnswerAlert
-            message={answerMessage}
-            severity={answerMessage.includes("不正解...") ? "error" : "success"}
-          />
-          <Button variant="tertiary" onClickHandler={onNext}>
-            次へ
-          </Button>
-        </>
-      )}
+      <AnswerAlert
+        message={quizResult.message}
+        severity={quizResult.isCorrect ? "success" : "error"}
+      />
+      <Button onClickHandler={onNext}>次へ</Button>
     </div>
   );
 };

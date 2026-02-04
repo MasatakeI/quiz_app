@@ -15,7 +15,7 @@ const QuizContent = () => {
     selectAnswer,
     handleNext,
     handleReload,
-    answerMessage,
+    quizResult,
     canPost,
     answers,
     currentDifficulty,
@@ -46,13 +46,15 @@ const QuizContent = () => {
         onReload={handleReload}
       />
 
-      <QuizAnswerAlert answerMessage={answerMessage} onNext={handleNext} />
+      <QuizAnswerAlert quizResult={quizResult} onNext={handleNext} />
 
       <QuizAnswers
         shuffledAnswers={answers}
         onSelect={selectAnswer}
         canPost={canPost}
         indexMap={indexMap}
+        selectedAnswer={quizResult?.selected}
+        correctAnswer={quizResult?.correct}
       />
 
       <BackToHomeLink />

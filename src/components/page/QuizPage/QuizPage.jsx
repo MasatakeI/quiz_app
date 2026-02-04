@@ -1,22 +1,22 @@
 // page/QuizPage/QuizPage.jsx
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "./QuizPage.css";
 
-import QuizLoading from "../../widgets/QuizLoadng/QuizLoading";
-import QuizContent from "../../widgets/QuizContent/QuizContent";
-import QuizResult from "../../widgets/QuizResult/QuizResult";
+import QuizLoading from "@/components/widgets/QuizLoadng/QuizLoading";
+import QuizContent from "@/components/widgets/QuizContent/QuizContent";
+import QuizResult from "@/components/widgets/QuizResult/QuizResult";
 
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchQuizzesAsync,
-  selectIsLoading,
-} from "../../../redux/features/quizContent/quizContentSlice";
-import { selectQuizFinished } from "../../../redux/selectors/quizProgress/quizProgressSelector";
+
+import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
+import { selectIsLoading } from "@/redux/features/quizContent/quizContentSelector";
+import { selectQuizFinished } from "@/redux/features/quizProgress/quizProgressSelector";
 import { useParams, useSearchParams } from "react-router";
 
 const QuizPage = () => {
   const dispatch = useDispatch();
+
   const { category } = useParams();
   const isLoading = useSelector(selectIsLoading);
 
@@ -29,7 +29,7 @@ const QuizPage = () => {
 
   useEffect(() => {
     dispatch(fetchQuizzesAsync({ category, type, difficulty, amount }));
-  }, [dispatch, category]);
+  }, [dispatch, category, type, difficulty, amount]);
 
   if (isLoading) {
     return <QuizLoading />;

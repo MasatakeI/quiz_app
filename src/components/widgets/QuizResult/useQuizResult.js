@@ -2,13 +2,15 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router";
+
 import {
   selectNumberOfCorrects,
   selectTransilateCurrentDifficulty,
   selectUserAnswers,
-} from "../../../redux/selectors/quizProgress/quizProgressSelector";
+} from "@/redux/features/quizProgress/quizProgressSelector";
+
 import { getQuizTitle } from "../../../constants/quizCategories";
-import { fetchQuizzesAsync } from "../../../redux/features/quizContent/quizContentSlice";
+import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
 
 export const useQuizResult = () => {
   const dispatch = useDispatch();

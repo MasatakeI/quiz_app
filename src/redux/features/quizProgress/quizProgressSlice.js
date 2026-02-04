@@ -2,7 +2,7 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 import { judgeCorrectAnswer } from "../../../models/QuizModel";
-import { fetchQuizzesAsync } from "../quizContent/quizContentSlice";
+import { fetchQuizzesAsync } from "../quizContent/quizContentThunks";
 
 export const progressInitialState = {
   currentIndex: 0,

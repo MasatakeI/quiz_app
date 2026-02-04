@@ -7,8 +7,9 @@ import { useParams, useSearchParams } from "react-router";
 import {
   selectIsLoading,
   selectFetchError,
-  fetchQuizzesAsync,
-} from "../../../redux/features/quizContent/quizContentSlice";
+} from "@/redux/features/quizContent/quizContentSelector";
+
+import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
 
 import Button from "../../common/Button/Button";
 import LoadingSpinner from "../../common/LoadingSpinner/LoadingSpinner";
