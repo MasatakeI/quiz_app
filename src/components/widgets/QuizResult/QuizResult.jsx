@@ -22,7 +22,7 @@ const QuizResult = () => {
 
     userAnswers,
     indexMap,
-    difficultyMap,
+    currentDifficulty,
     getType,
   } = useQuizResult();
 
@@ -34,7 +34,7 @@ const QuizResult = () => {
         numberOfIncorrects={numberOfIncorrects}
         amount={amount}
         difficulty={difficulty}
-        difficultyMap={difficultyMap}
+        difficultyMap={currentDifficulty}
         getType={getType}
       />
 

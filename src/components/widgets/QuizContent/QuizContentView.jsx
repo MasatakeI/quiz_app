@@ -11,7 +11,7 @@ const QuizContentView = ({
   title,
   getType,
 }) => {
-  if (!currentQuiz) return null;
+  if (!currentQuiz || !currentQuiz.question) return null;
   return (
     <>
       <h1>{title}クイズ</h1>

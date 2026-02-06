@@ -1,24 +1,22 @@
 //quizProgressSlice.test.js
 
-import { describe, test, expect, vi, beforeEach } from "vitest";
+import { describe, test, expect } from "vitest";
 
 import quizProgressReducer, {
   progressInitialState,
   goToNextQuiz,
   submitAnswer,
-} from "../../../../redux/features/quizProgress/quizProgressSlice";
+  resetProgress,
+} from "@/redux/features/quizProgress/quizProgressSlice";
 
-import { decodedQuizList } from "../../../fixtures/QuizFixture";
-import { fetchQuizzesAsync } from "../../../../redux/features/quizContent/quizContentSlice";
+import { decodedQuizList } from "@/test/fixtures/quizFixture";
+import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
+import { resetQuizContent } from "@/redux/features/quizContent/quizContentSlice";
 
-const applyFulfilled = (slice, thunk, payload, prev) =>
-  slice(prev, thunk.fulfilled(payload));
+const applyPending = (slice, thunk, prev = progressInitialState) =>
+  slice(prev, thunk.pending());
 
 describe("quizProgressSlice.jsのテスト", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   test("初期stateの確認", () => {
     expect(progressInitialState).toEqual({
       currentIndex: 0,
@@ -43,17 +41,45 @@ describe("quizProgressSlice.jsのテスト", () => {
         currentQuiz.correctAnswer,
         ...currentQuiz.incorrectAnswers,
       ];
-      test("ユーザーの回答を記録する:正解の場合", () => {
-        const selectedAnswer = currentQuiz.correctAnswer;
 
+      test.each([
+        {
+          title: "正解",
+          selectedAnswer: currentQuiz.correctAnswer,
+          isCorrect: true,
+        },
+        {
+          title: "不正解",
+          selectedAnswer: currentQuiz.incorrectAnswers[0],
+          isCorrect: false,
+        },
+      ])("$title の場合(1問目)", ({ selectedAnswer, isCorrect }) => {
         const action = submitAnswer({
           currentQuiz,
           selectedAnswer,
           allAnswers,
         });
+
         const state = quizProgressReducer(progressInitialState, action);
 
         expect(state).toEqual({
+          currentIndex: 0,
+          numberOfCorrects: isCorrect ? 1 : 0,
+          numberOfIncorrects: isCorrect ? 0 : 1,
+          userAnswers: [
+            {
+              question: currentQuiz.question,
+              correctAnswer: currentQuiz.correctAnswer,
+              selectedAnswer,
+              isCorrect,
+              allAnswers,
+            },
+          ],
+        });
+      });
+
+      test("累積:1問目が正解した状態で2問目を誤答した場合", () => {
+        const stateAfterFirest = {
           currentIndex: 0,
           numberOfCorrects: 1,
           numberOfIncorrects: 0,
@@ -61,59 +87,98 @@ describe("quizProgressSlice.jsのテスト", () => {
             {
               question: currentQuiz.question,
               correctAnswer: currentQuiz.correctAnswer,
-              selectedAnswer,
+              selectedAnswer: currentQuiz.correctAnswer,
               isCorrect: true,
               allAnswers,
             },
           ],
-        });
-      });
-      test("ユーザーの回答を記録する:誤答の場合", () => {
-        const selectedAnswer = currentQuiz.incorrectAnswers[0];
+        };
+
+        const secondQuiz = decodedQuizList[1];
+        const secondAllAnswers = [
+          secondQuiz.correctAnswer,
+          ...secondQuiz.incorrectAnswers,
+        ];
+
+        const action0 = goToNextQuiz();
+        const stateAfterIndex = quizProgressReducer(stateAfterFirest, action0);
 
         const action = submitAnswer({
-          currentQuiz,
-          selectedAnswer,
-          allAnswers,
+          currentQuiz: secondQuiz,
+          selectedAnswer: secondQuiz.incorrectAnswers[0],
+          allAnswers: secondAllAnswers,
         });
-        const state = quizProgressReducer(progressInitialState, action);
+
+        const state = quizProgressReducer(stateAfterIndex, action);
 
         expect(state).toEqual({
-          currentIndex: 0,
-          numberOfCorrects: 0,
+          currentIndex: 1,
+          numberOfCorrects: 1,
           numberOfIncorrects: 1,
           userAnswers: [
             {
               question: currentQuiz.question,
               correctAnswer: currentQuiz.correctAnswer,
-              selectedAnswer,
-              isCorrect: false,
+              selectedAnswer: currentQuiz.correctAnswer,
+              isCorrect: true,
               allAnswers,
+            },
+            {
+              question: secondQuiz.question,
+              correctAnswer: secondQuiz.correctAnswer,
+              selectedAnswer: secondQuiz.incorrectAnswers[0],
+              isCorrect: false,
+              allAnswers: secondAllAnswers,
             },
           ],
         });
       });
     });
-  });
 
-  describe("extraReducers", () => {
-    describe("fetchQuizzesAsync.fulfilledの時", () => {
-      test("stateの値をリセットする", () => {
+    describe("resetProgress", () => {
+      test("クイズの進行状況を初期値に戻す", () => {
         const prev = {
           currentIndex: 2,
           numberOfCorrects: 2,
           numberOfIncorrects: 1,
-          userAnswers: [],
+          userAnswers: [
+            {
+              question: "a",
+              correctAnswer: "b",
+              selectedAnswer: "c",
+              allAnswers: [],
+              isCorrect: false,
+            },
+          ],
         };
-        const fulfilled = applyFulfilled(
-          quizProgressReducer,
-          fetchQuizzesAsync,
-          decodedQuizList,
-          prev
-        );
 
-        expect(fulfilled).toEqual(progressInitialState);
+        const state = quizProgressReducer(prev, resetProgress());
+
+        expect(state).toEqual(progressInitialState);
       });
+    });
+  });
+
+  describe("extraReducers", () => {
+    const prev = {
+      currentIndex: 2,
+      numberOfCorrects: 2,
+      numberOfIncorrects: 1,
+      userAnswers: [],
+    };
+    test("fetchQuizzesAsync.pendingの時,stateの値をリセットする", () => {
+      const pending = applyPending(
+        quizProgressReducer,
+        fetchQuizzesAsync,
+        prev,
+      );
+      expect(pending).toEqual(progressInitialState);
+    });
+
+    test("resetQuizContentが呼ばれた時,,stateの値をリセットする", () => {
+      const action = resetQuizContent();
+      const state = quizProgressReducer(prev, action);
+      expect(state).toEqual(progressInitialState);
     });
   });
 });

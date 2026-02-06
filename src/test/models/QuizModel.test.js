@@ -9,11 +9,14 @@ import {
   judgeCorrectAnswer,
   shuffleAnswers,
   translateCurrentDifficulty,
-  getQuizTitle,
-} from "../../models/QuizModel";
+  validateQuizSettings,
+} from "@/models/QuizModel";
 
 import { undecodedQuizList, decodedQuizList } from "../fixtures/quizFixture";
-import { fetchQuizzes } from "../../data_fetcher/QuizFetcher";
+import { fetchQuizzes } from "@/data_fetcher/QuizFetcher";
+import { QuizError } from "@/models/errors/QuizError";
+
+import { MODEL_ERROR_CODE } from "@/models/errors/quizErrorCode";
 
 vi.mock("../../data_fetcher/QuizFetcher");
 
@@ -23,27 +26,52 @@ describe("QuizModel.jsのテスト", () => {
   });
 
   describe("createFormatQuizData", () => {
+    const quizData = undecodedQuizList[0];
     test("成功ケース:HTMLエンティティをデコードし整形されたオブジェクトを返す", () => {
-      const quizData = undecodedQuizList[0];
-
       const result = createFormatQuizData(quizData);
       expect(result).toEqual(decodedQuizList[0]);
     });
 
     test("失敗ケース:quizDataがない場合エラーをスローする", () => {
-      expect(() => createFormatQuizData()).toThrow("クイズデータがありません");
+      const error = new QuizError({
+        code: MODEL_ERROR_CODE.INVALID_DATA,
+        message: "クイズデータがありません",
+      });
+      expect(() => createFormatQuizData()).toThrow(error);
     });
+    test.each([
+      "question",
+      "correct_answer",
+      "incorrect_answers",
+      "difficulty",
+    ])(
+      "失敗ケース:quizDataの必須フィールド(%s)が欠落している場合エラーをスローする",
+      (field) => {
+        const incompleteQuizData = {
+          ...quizData,
+          [field]: undefined,
+        };
+        const error = new QuizError({
+          code: MODEL_ERROR_CODE.INVALID_DATA,
+          message: `クイズデータの必須フィールドが欠落しています: ${field}`,
+        });
+        expect(() => createFormatQuizData(incompleteQuizData)).toThrow(error);
+      },
+    );
   });
 
   describe("createFormattedQuizList", () => {
-    test("成功ケース", () => {
+    test("成功ケース:取得したクイズリストをcreateFormatQuizDataを使いフォーマットする", () => {
       const result = createFormattedQuizList(undecodedQuizList);
       expect(result).toEqual(decodedQuizList);
     });
-
-    test("失敗ケース:quizDataListがない場合エラーをスローする", () => {
-      expect(() => createFormattedQuizList()).toThrow(
-        "quizDataListが配列ではありません"
+    test("クイズデータが配列でない場合QuizErrorをスローする", () => {
+      const error = new QuizError({
+        code: MODEL_ERROR_CODE.INVALID_DATA,
+        message: "クイズリストが配列ではありません",
+      });
+      expect(() => createFormattedQuizList(undecodedQuizList[0])).toThrow(
+        error,
       );
     });
   });
@@ -62,15 +90,79 @@ describe("QuizModel.jsのテスト", () => {
         category,
         type,
         difficulty,
-        amount
+        amount,
       );
     });
 
-    test("fetch失敗時,エラーをスローする", async () => {
-      fetchQuizzes.mockRejectedValue(new Error("ANY"));
+    test("失敗:クイズデータリストがなかった場合", async () => {
+      fetchQuizzes.mockResolvedValue([]);
+      const error = new QuizError({
+        code: MODEL_ERROR_CODE.NOT_FOUND,
+        message: "該当するクイズが見つかりませんでした",
+      });
       await expect(
-        createQuizzes(category, type, difficulty, amount)
-      ).rejects.toThrow("create失敗(Models)");
+        createQuizzes(category, type, difficulty, amount),
+      ).rejects.toThrow(error);
+    });
+
+    test("fetch失敗時,NETWORKエラーとしてラップして再スローする", async () => {
+      const originalError = new Error("API Server Down");
+      fetchQuizzes.mockRejectedValue(originalError);
+
+      try {
+        await createQuizzes("sports", "multiple", "easy", 10);
+      } catch (error) {
+        expect(error).toBeInstanceOf(QuizError);
+        expect(error.code).toBe(MODEL_ERROR_CODE.NETWORK);
+        expect(error.message).toBe("クイズの取得に失敗しました");
+        expect(error.cause).toBe(originalError);
+      }
+    });
+  });
+
+  describe("validateQuizSettings:項目が選択されているかバリデーションを行う", () => {
+    const validParams = {
+      category: "sports",
+      type: "multiple",
+      difficulty: "easy",
+      amount: 10,
+    };
+
+    test("正常系:すべての項目が正しく入力されている場合,trueを返す", () => {
+      const resutl = validateQuizSettings(validParams);
+      expect(resutl).toBe(true);
+    });
+
+    test.each([
+      {
+        params: { ...validParams, category: "" },
+        field: "category",
+        message: "ジャンルを選択してください",
+      },
+
+      {
+        params: { ...validParams, type: "" },
+        field: "type",
+        message: "タイプを選択してください",
+      },
+      {
+        params: { ...validParams, difficulty: "" },
+        field: "difficulty",
+        message: "レベルを選択してください",
+      },
+      {
+        params: { ...validParams, amount: null },
+        field: "amount",
+        message: "問題数を選択してください",
+      },
+    ])(`$title`, ({ params, field, message }) => {
+      expect(() => validateQuizSettings(params)).toThrow(
+        new QuizError({
+          code: MODEL_ERROR_CODE.VALIDATION,
+          message: message,
+          field: field,
+        }),
+      );
     });
   });
 

@@ -1,7 +1,7 @@
 //useQuizResult.js
 
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 
 import {
   selectNumberOfCorrects,
@@ -34,18 +34,11 @@ export const useQuizResult = () => {
   const amount = params.get("amount");
 
   const indexMap = ["A", "B", "C", "D"];
-  const difficultyMap = {
-    easy: "かんたん",
-    medium: "ふつう",
-    hard: "むずかしい",
-  };
-
   const typeMap = {
     boolean: "2択",
     multiple: "4択",
   };
-
-  const getType = typeMap[type];
+  const getType = typeMap[type] || "不明";
 
   const handleRetry = async () => {
     dispatch(fetchQuizzesAsync({ category, type, difficulty, amount }));
@@ -64,7 +57,6 @@ export const useQuizResult = () => {
     difficulty,
     userAnswers,
     indexMap,
-    difficultyMap,
     getType,
   };
 };

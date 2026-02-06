@@ -1,3 +1,5 @@
+// src/hooks/useNavigationHelper.js
+
 import { resetQuizContent } from "@/redux/features/quizContent/quizContentSlice";
 import { resetQuizSettings } from "@/redux/features/quizSettings/quizSettingsSlice";
 import { useDispatch } from "react-redux";

@@ -1,15 +1,18 @@
 // src/test/components/widgets/QuizContent/QuizContent.test.jsx
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, test, vi, expect, beforeEach } from "vitest";
 
-import QuizContent from "../../../../components/widgets/QuizContent/QuizContent";
+import QuizContent from "@/components/widgets/QuizContent/QuizContent";
 
-import { useQuizContent } from "../../../../components/widgets/QuizContent/useQuizContent";
+import { renderWithStore } from "@/test/utils/renderWithStore";
+import { contentInitialState } from "@/redux/features/quizContent/quizContentSlice";
+import { progressInitialState } from "@/redux/features/quizProgress/quizProgressSlice";
+import quizContentReducer from "@/redux/features/quizContent/quizContentSlice";
+import quizProgressReducer from "@/redux/features/quizProgress/quizProgressSlice";
+import userEvent from "@testing-library/user-event";
 
 // ---mocks---
-
-vi.mock("../../../../components/widgets/QuizContent/useQuizContent");
 
 vi.mock("../../../../components/widgets/QuizContent/QuizAnswers", () => ({
   default: ({ shuffledAnswers, onSelect, canPost }) => (
@@ -23,88 +26,100 @@ vi.mock("../../../../components/widgets/QuizContent/QuizAnswers", () => ({
   ),
 }));
 
-vi.mock("../../../../components/widgets/QuizContent/QuizContentView", () => ({
-  default: ({ onReload }) => (
-    <button onClick={onReload}>再読み込みしてください</button>
-  ),
-}));
-
 vi.mock("../../../../components/widgets/QuizContent/QuizAnswerAlert", () => ({
-  default: ({ answerMessage, onNext }) =>
-    answerMessage ? <button onClick={onNext}>次へ</button> : null,
+  default: ({ quizResult, onNext }) =>
+    quizResult ? <button onClick={onNext}>次へ</button> : null,
 }));
 
 vi.mock("../../../../components/common/BackToHomeLink/BackToHomeLink", () => ({
   default: () => <div>ホームへ戻る</div>,
 }));
 
-const mockSelectAnswer = vi.fn();
-const mockHandleNext = vi.fn();
-const mockHandleReload = vi.fn();
+const mockNavigate = vi.fn();
 
-const baseMockValue = {
-  selectAnswer: mockSelectAnswer,
-  handleNext: mockHandleNext,
-  handleReload: mockHandleReload,
-  answerMessage: null,
-  canPost: true,
-  answers: ["True", "False"],
-  currentDifficulty: "easy",
-  currentIndex: 0,
-  currentQuiz: { question: "test question" },
-  numberOfCorrects: 0,
-  numberOfIncorrects: 0,
-  type: "boolean",
-  amount: 5,
-};
+vi.mock("react-router", () => {
+  const actual = vi.importActual("react-router");
 
-beforeEach(() => {
-  vi.clearAllMocks();
-
-  useQuizContent.mockReturnValue(baseMockValue);
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useParams: () => ({ category: "sports" }),
+    useSearchParams: () => [
+      new URLSearchParams("type=boolean&difficulty=easy&amount=5"),
+      vi.fn(),
+    ],
+  };
 });
 
 describe("QuizContent.jsxのテスト", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const commonOption = {
+    reducers: {
+      quizContent: quizContentReducer,
+      quizProgress: quizProgressReducer,
+    },
+    preloadedState: {
+      quizContent: {
+        ...contentInitialState,
+        quizzes: [
+          {
+            question: "test1?",
+            correctAnswer: "True",
+            incorrectAnswers: ["False"],
+            difficulty: "easy",
+          },
+          {
+            question: "test2?",
+            correctAnswer: "True",
+            incorrectAnswers: ["False"],
+            difficulty: "easy",
+          },
+        ],
+      },
+      quizProgress: { ...progressInitialState },
+    },
+  };
+
   test("shuffledAnswersがQuizAnswersに渡される", () => {
-    render(<QuizContent />);
+    renderWithStore(<QuizContent />, commonOption);
 
-    expect(screen.getByText("True")).toBeInTheDocument();
-    expect(screen.getByText("False")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "True" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "False" })).toBeInTheDocument();
   });
 
-  test("回答ボタンをクリックするとselectAnswerが呼ばれる", () => {
-    render(<QuizContent />);
+  test("回答ボタンをクリックすると判定が行われて,次へボタンが表示される", async () => {
+    const user = userEvent.setup();
 
-    fireEvent.click(screen.getByText("True"));
-    expect(mockSelectAnswer).toHaveBeenCalledWith("True");
+    renderWithStore(<QuizContent />, commonOption);
+
+    const answerButton = screen.getByRole("button", { name: "True" });
+
+    await user.click(answerButton);
+
+    expect(screen.getByRole("button", { name: "次へ" })).toBeInTheDocument();
+    expect(answerButton).toBeDisabled();
   });
 
-  test("再読み込みボタンをクリックするとhandleReloadが呼ばれる", () => {
-    render(<QuizContent />);
+  test("quizResultがある時,次へボタンを押すと,次の問題が表示される", async () => {
+    const user = userEvent.setup();
+    renderWithStore(<QuizContent />, commonOption);
 
-    fireEvent.click(screen.getByText("再読み込みしてください"));
-    expect(mockHandleReload).toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "True" }));
+    const goToNextButton = screen.getByRole("button", { name: "次へ" });
+    await user.click(goToNextButton);
+    expect(screen.getByText("Q2. test2?")).toBeInTheDocument();
   });
 
-  test("answerMessageがある時,次へボタンを押すとhandleNextが呼ばれる", () => {
-    useQuizContent.mockReturnValueOnce({
-      ...baseMockValue,
-      answerMessage: "正解!",
-    });
-    render(<QuizContent />);
-    fireEvent.click(screen.getByText("次へ"));
-    expect(mockHandleNext).toHaveBeenCalled();
-  });
+  test("回答後は選択肢のボタンがdisabledになる", async () => {
+    const user = userEvent.setup();
 
-  test("canPost=falseの時回答ボタンがdisabledになる", () => {
-    useQuizContent.mockReturnValueOnce({
-      ...baseMockValue,
-      canPost: false,
-    });
-
-    render(<QuizContent />);
-
-    expect(screen.getByText("True")).toBeDisabled();
-    expect(screen.getByText("False")).toBeDisabled();
+    renderWithStore(<QuizContent />, commonOption);
+    const answerButton = screen.getByRole("button", { name: "True" });
+    await user.click(answerButton);
+    expect(screen.getByRole("button", { name: "True" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "False" })).toBeDisabled();
   });
 });

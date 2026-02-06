@@ -1,105 +1,160 @@
 //page/HomePage/HomePage.test.jsx
 
 import { screen, render, fireEvent, renderHook } from "@testing-library/react";
-import { vi, test, expect, beforeEach } from "vitest";
-import { useHomePage } from "../../../../components/page/HomePage/useHomePage";
+import { vi, test, expect, beforeEach, describe } from "vitest";
 
 import HomePage from "../../../../components/page/HomePage/HomePage";
+import { renderWithStore } from "@/test/utils/renderWithStore";
 
-vi.mock("../../../../components/page/HomePage/useHomePage");
+import { contentInitialState } from "@/redux/features/quizContent/quizContentSlice";
+import { progressInitialState } from "@/redux/features/quizProgress/quizProgressSlice";
+import quizContentReducer from "@/redux/features/quizContent/quizContentSlice";
+import quizProgressReducer from "@/redux/features/quizProgress/quizProgressSlice";
+import quizSettingsReducer from "@/redux/features/quizSettings/quizSettingsSlice";
+import { settingsInitialState } from "@/redux/features/quizSettings/quizSettingsSlice";
+import userEvent from "@testing-library/user-event";
 
-vi.mock("../../../../components/common/Selection/Selection", () => ({
-  default: ({ label, value, disabled }) => (
-    <div>
+vi.mock("@/components/common/Selection/Selection", () => ({
+  default: ({ label, value, disabled, error }) => (
+    <div data-testid={`selection-${label}`}>
       <span>{label}</span>
-      <span>{value}</span>
+      <span data-testid="value">{value}</span>
       {disabled && <span>disabled</span>}
+      {error && <span data-testid="error">error</span>}
     </div>
   ),
 }));
 
-vi.mock("../../../../components/common/SimpleSnackbar/SimpleSnackbar", () => ({
-  default: ({ isOpen, onClose, message }) =>
-    isOpen ? (
-      <div>
-        <span>{message}</span>
-        <button onClick={onClose}>close</button>
-      </div>
-    ) : null,
-}));
-vi.mock("../../../../components/common/Button/Button", () => ({
-  default: ({ onClickHandler, children }) => (
-    <button onClick={onClickHandler}>{children}</button>
-  ),
-}));
+const mockNavigate = vi.fn();
 
-const mockHandleStart = vi.fn();
-const mockCloseSnackbar = vi.fn();
+vi.mock("react-router", () => {
+  const actual = vi.importActual("react-router");
 
-const baseMockValue = {
-  items: [
-    { label: "ジャンル", value: "sports", onChange: vi.fn(), array: [] },
-    { label: "タイプ", value: "multiple", onChange: vi.fn(), array: [] },
-    { label: "Level", value: "easy", onChange: vi.fn(), array: [] },
-    {
-      label: "問題数",
-      value: 10,
-      onChange: vi.fn(),
-      array: [],
-      disabled: false,
-    },
-  ],
-  handleStart: mockHandleStart,
-  closeSnackbar: mockCloseSnackbar,
-  errorMessage: "",
-  snackbarOpen: false,
-};
-
-beforeEach(() => {
-  vi.clearAllMocks();
-  useHomePage.mockReturnValue(baseMockValue);
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useParams: () => ({ category: "sports" }),
+    useSearchParams: () => [
+      new URLSearchParams("type=boolean&difficulty=easy&amount=5"),
+      vi.fn(),
+    ],
+  };
 });
 
 describe("HomePage.jsx", () => {
-  test("見出しとSelectionが表示される", () => {
-    render(<HomePage />);
-    expect(screen.getByText("クイズに挑戦"));
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    baseMockValue.items.forEach((item) => {
-      expect(screen.getByText(item.label)).toBeInTheDocument();
-      expect(screen.getByText(item.value)).toBeInTheDocument();
+  const commonOption = {
+    reducers: {
+      quizContent: quizContentReducer,
+      quizProgress: quizProgressReducer,
+      quizSettings: quizSettingsReducer,
+    },
+    preloadedState: {
+      quizContent: { ...contentInitialState },
+      quizProgress: { ...progressInitialState },
+      quizSettings: { ...settingsInitialState },
+    },
+  };
+
+  describe("見出しと各Selectionが表示される", () => {
+    test.each([
+      {
+        label: "ジャンル",
+        key: "category",
+      },
+      {
+        label: "タイプ",
+        key: "type",
+      },
+      {
+        label: "問題数",
+        key: "amount",
+      },
+      {
+        label: "レベル",
+        key: "difficulty",
+      },
+    ])("$label の Selection が初期値 で表示される", ({ label, key }) => {
+      renderWithStore(<HomePage />, commonOption);
+      expect(screen.getByText("クイズに挑戦")).toBeInTheDocument();
+
+      expect(screen.getByText(label)).toBeInTheDocument();
+
+      const selection = screen.getByTestId(`selection-${label}`);
+      const valueSpan = selection.querySelector('[data-testid="value"]');
+
+      const expectedValue = String(
+        commonOption.preloadedState.quizSettings[key],
+      );
+      expect(valueSpan).toHaveTextContent(expectedValue);
     });
   });
 
-  test("クイズスタートボタンを押すとhandleStartが呼ばれる", () => {
-    render(<HomePage />);
-
-    fireEvent.click(screen.getByText("クイズスタート"));
-    expect(mockHandleStart).toHaveBeenCalledTimes(1);
+  test("タイプがboleanの時,問題数のSelectionがdisabledになる", () => {
+    renderWithStore(<HomePage />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizSettings: {
+          ...settingsInitialState,
+          type: "boolean",
+        },
+      },
+    });
+    const amountSelection = screen.getByTestId(`selection-問題数`);
+    expect(amountSelection).toHaveTextContent("disabled");
   });
 
-  test("snackbarOpen=trueの時,エラーメッセージが表示される", () => {
-    useHomePage.mockReturnValue({
-      ...baseMockValue,
-      snackbarOpen: true,
-      errorMessage: "エラー",
+  test("selectionのvalueが設定されずにスタートボタンを押すと,対応するselectionにerrorステートが付く", async () => {
+    const user = userEvent.setup();
+    renderWithStore(<HomePage />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizSettings: {
+          category: "sports",
+          difficulty: "",
+          type: "multiple",
+          amount: "10",
+        },
+      },
     });
 
-    render(<HomePage />);
+    const startButton = screen.getByRole("button", { name: "クイズスタート" });
+    await user.click(startButton);
 
-    expect(screen.getByText("エラー")).toBeInTheDocument();
+    const errorSelection = screen.getByTestId(`selection-レベル`);
+    const errorSpan = errorSelection.querySelector('[data-testid="error"]');
+    expect(errorSpan).toBeInTheDocument();
+    expect(errorSpan).not.toBeNull();
+
+    expect(errorSpan).toHaveTextContent("error");
   });
 
-  test("snackbarのcloseボタンでcolseSnackbarが呼ばれる", () => {
-    useHomePage.mockReturnValue({
-      ...baseMockValue,
-      snackbarOpen: true,
-      errorMessage: "エラー",
+  test("クイズスタートボタンをクリックすると handleStart が呼ばれる", async () => {
+    const user = userEvent.setup();
+    renderWithStore(<HomePage />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizSettings: {
+          category: "sports",
+          difficulty: "easy",
+          type: "multiple",
+          amount: "10",
+        },
+      },
     });
 
-    render(<HomePage />);
+    const startButton = screen.getByRole("button", { name: "クイズスタート" });
+    await user.click(startButton);
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/quiz/sports?type=multiple&difficulty=easy&amount=10",
+    );
 
-    fireEvent.click(screen.getByText("close"));
-    expect(mockCloseSnackbar).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,71 +1,68 @@
 //useHomePage.test.jsx
 
 import { describe, test, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import { MemoryRouter, useNavigate, useParams } from "react-router";
+import { act } from "@testing-library/react";
 
-import quizContentReducer from "../../../../redux/features/quizContent/quizContentSlice";
-import quizProgressReducer from "../../../../redux/features/quizProgress/quizProgressSlice";
-import quizSettingsReducer from "../../../../redux/features/quizSettings/quizSettingsSlice";
+import quizContentReducer, {
+  contentInitialState,
+} from "../../../../redux/features/quizContent/quizContentSlice";
+import quizProgressReducer, {
+  progressInitialState,
+} from "../../../../redux/features/quizProgress/quizProgressSlice";
+import quizSettingsReducer, {
+  settingsInitialState,
+} from "../../../../redux/features/quizSettings/quizSettingsSlice";
+
+import snackbarReducer from "@/redux/features/snackbar/snackbarSlice";
 
 import { useHomePage } from "../../../../components/page/HomePage/useHomePage";
 
-const navigateMock = vi.fn();
+import { renderHookWithStore } from "@/test/utils/renderHookWithStore";
+
+const mockNavigate = vi.fn();
 
 vi.mock("react-router", async () => {
   const actual = await vi.importActual("react-router");
 
   return {
     ...actual,
-    useNavigate: () => navigateMock,
-    useParams: () => ({ category: "sports" }),
+    useNavigate: () => mockNavigate,
   };
 });
 
-const setup = (preloadedState) => {
-  const store = configureStore({
-    reducer: {
+describe("useHomePage.js", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const commonOptions = {
+    reducers: {
       quizContent: quizContentReducer,
       quizProgress: quizProgressReducer,
       quizSettings: quizSettingsReducer,
+      snackbar: snackbarReducer,
     },
-    preloadedState,
-  });
-
-  const wrapper = ({ children }) => (
-    <Provider store={store}>
-      <MemoryRouter
-        initialEntries={[
-          "/quiz/sports?type=multiple&difficulty=easy&amount=10",
-        ]}
-      >
-        {children}
-      </MemoryRouter>
-    </Provider>
-  );
-
-  return { store, wrapper };
-};
-
-const baseState = {
-  quizSettings: {
-    category: "sports",
-    difficulty: "easy",
-    type: "multiple",
-    amount: 10,
-  },
-};
-
-describe("useHomePage.js", () => {
-  beforeEach(() => {
-    navigateMock.mockClear();
-  });
+    preloadedState: {
+      quizContent: { ...contentInitialState },
+      quizProgress: { ...progressInitialState },
+      quizSettings: { ...settingsInitialState },
+    },
+  };
   describe("handleStart", () => {
-    test("成功時:dispatchとnavigateが呼ばれる", () => {
-      const { store, wrapper } = setup(baseState);
-      const { result } = renderHook(() => useHomePage(), { wrapper });
+    test("成功時:dispatchとnavigateが呼ばれる", async () => {
+      const { store, result } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+        preloadedState: {
+          ...commonOptions.preloadedState,
+          quizSettings: {
+            category: "music",
+            type: "multiple",
+            difficulty: "hard",
+            amount: 10,
+          },
+        },
+      });
 
       act(() => {
         result.current.handleStart();
@@ -73,60 +70,93 @@ describe("useHomePage.js", () => {
 
       const state = store.getState().quizSettings;
 
-      expect(state.category).toBe("sports");
-      expect(state.difficulty).toBe("easy");
+      expect(state.category).toBe("music");
+      expect(state.difficulty).toBe("hard");
       expect(state.type).toBe("multiple");
       expect(state.amount).toBe(10);
 
-      expect(navigateMock).toHaveBeenCalledWith(
-        "/quiz/sports?type=multiple&difficulty=easy&amount=10"
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/quiz/music?type=multiple&difficulty=hard&amount=10",
       );
     });
 
-    test("validation失敗時:snackbarが開く", () => {
-      const invalidState = {
-        quizSettings: {
-          category: null,
-          difficulty: "",
-          type: "",
-          amount: 0,
+    test("type=booleanの時 amountは5に強制される", () => {
+      const { result } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+        preloadedState: {
+          ...commonOptions.preloadedState,
+          quizSettings: {
+            category: "music",
+            type: "boolean",
+            difficulty: "hard",
+            amount: 10,
+          },
         },
-      };
-
-      const { store, wrapper } = setup(invalidState);
-      const { result } = renderHook(() => useHomePage(), { wrapper });
+      });
 
       act(() => {
         result.current.handleStart();
       });
 
-      expect(result.current.snackbarOpen).toBe(true);
-      expect(result.current.errorMessage).not.toBe("");
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/quiz/music?type=boolean&difficulty=hard&amount=5",
+      );
+    });
+
+    test("異常系:失敗時messageとfieldが設定され,messageがsnackbarで表示される", () => {
+      const { store, result, dispatchSpy } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+        preloadedState: {
+          ...commonOptions.preloadedState,
+          quizSettings: {
+            category: "music",
+            type: "boolean",
+            difficulty: "",
+            amount: 10,
+          },
+        },
+      });
+
+      act(() => {
+        result.current.handleStart();
+      });
+
+      const state = store.getState();
+
+      expect(state.quizSettings.settingError.field).toBe("difficulty");
+      expect(state.quizSettings.settingError.message).toBe(
+        "レベルを選択してください",
+      );
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+
+      expect(dispatchSpy).toHaveBeenCalledWith({
+        type: "snackbar/showSnackbar",
+        payload: "レベルを選択してください",
+      });
     });
   });
 
   describe("items", () => {
     test("4つ定義されている", () => {
-      const { wrapper } = setup(baseState);
-      const { result } = renderHook(() => useHomePage(), { wrapper });
+      const { result } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+      });
 
       expect(result.current.items).toHaveLength(4);
     });
 
     test("type=booleanの時,amountが5になる", () => {
-      const booleanState = {
-        quizSettings: {
-          category: "sports",
-          difficulty: "easy",
-          type: "boolean",
-          amount: 5,
-        },
-      };
-      const { wrapper, store } = setup(booleanState);
-      const { result } = renderHook(() => useHomePage(), { wrapper });
+      const { store, result } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+      });
 
       const typeItem = result.current.items.find(
-        (item) => item.label === "タイプ"
+        (item) => item.label === "タイプ",
       );
 
       act(() => {

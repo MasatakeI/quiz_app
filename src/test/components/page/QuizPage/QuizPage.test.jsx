@@ -1,16 +1,19 @@
 // page/QuizPage/QuizPage.test.jsx
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, test, expect, vi } from "vitest";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
+
+import { contentInitialState } from "@/redux/features/quizContent/quizContentSlice";
+import { progressInitialState } from "@/redux/features/quizProgress/quizProgressSlice";
+import quizContentReducer from "@/redux/features/quizContent/quizContentSlice";
+import quizProgressReducer from "@/redux/features/quizProgress/quizProgressSlice";
 
 import QuizPage from "../../../../components/page/QuizPage/QuizPage";
+import { renderWithStore } from "@/test/utils/renderWithStore";
 
-const quizContentReducer = (state = {}) => state;
-const quizProgressReducer = (state = {}) => state;
+import * as quizContentThunk from "@/redux/features/quizContent/quizContentThunks";
 
-vi.mock("../../../../components/widgets/QuizLoadng/QuizLoading", () => ({
+vi.mock("@/components/widgets/QuizLoading/QuizLoading", () => ({
   default: () => <div>Loading</div>,
 }));
 
@@ -18,105 +21,114 @@ vi.mock("../../../../components/widgets/QuizContent/QuizContent", () => ({
   default: () => <div>Content</div>,
 }));
 
-vi.mock("../../../../components/widgets/QuizResult/QuizResult", () => ({
+vi.mock("@/components/widgets/QuizResult/QuizResult", () => ({
   default: () => <div>Result</div>,
 }));
 
-vi.mock("react-router", async () => ({
-  useParams: () => ({ category: "sports" }),
-  useSearchParams: () => [new URLSearchParams()],
-}));
+const mockNavigate = vi.fn();
 
-// vi.mock("../../../../redux/features/quizContent/quizContentSlice", async () => {
-//   const actual = await vi.importActual(
-//     "../../../../redux/features/quizContent/quizContentSlice"
-//   );
+vi.mock("react-router", () => {
+  const actual = vi.importActual("react-router");
 
-//   const mockThunk = vi.fn(() => ({ type: "mock/fetch" }));
-//   mockThunk.pending = { type: "mock/fetch/pending" };
-//   mockThunk.fulfilled = { type: "mock/fetch/fulfilled" };
-//   mockThunk.rejected = { type: "mock/fetch/rejected" };
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useParams: () => ({ category: "sports" }),
+    useSearchParams: () => [
+      new URLSearchParams("type=boolean&difficulty=easy&amount=5"),
+      vi.fn(),
+    ],
+  };
+});
 
-//   return {
-//     ...actual,
-//     fetchQuizzesAsync: mockThunk,
-//   };
-// });
+describe("QuizPage.jsx", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(quizContentThunk, "fetchQuizzesAsync").mockReturnValue({
+      type: "mock",
+    });
+  });
 
-const setup = (preloadedState) => {
-  const store = configureStore({
-    reducer: {
+  const commonOption = {
+    reducers: {
       quizContent: quizContentReducer,
       quizProgress: quizProgressReducer,
     },
-    preloadedState,
-  });
-
-  const wrapper = ({ children }) => (
-    <Provider store={store}>{children}</Provider>
-  );
-
-  return { store, wrapper };
-};
-
-describe("QuizPage.jsx", () => {
-  test("isLoading=trueのときQuizLoadingが表示される", () => {
-    const { wrapper } = setup({
+    preloadedState: {
       quizContent: {
-        isLoading: true,
-        quizzes: [],
+        ...contentInitialState,
+        quizzes: Array(5).fill({ question: "test" }),
+        isLoading: false,
         fetchError: null,
       },
+      quizProgress: { ...progressInitialState },
+    },
+  };
 
-      quizProgress: {
-        currentIndex: 0,
-        numberOfCorrects: 0,
-        numberOfIncorrects: 0,
-        userAnsers: [],
+  test("fetchQuizzesAsync が 正しい引数で呼ばれる", async () => {
+    const fetchSpy = vi.spyOn(quizContentThunk, "fetchQuizzesAsync");
+    renderWithStore(<QuizPage />, commonOption);
+
+    expect(fetchSpy).toHaveBeenCalledWith({
+      category: "sports",
+      type: "boolean",
+      difficulty: "easy",
+      amount: "5",
+    });
+  });
+
+  test("isLoading=trueまたはfetchErrorがあるときQuizLoadingが表示される", () => {
+    renderWithStore(<QuizPage />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizContent: {
+          ...commonOption.preloadedState.quizContent,
+          isLoading: true,
+          fetchError: { message: "エラー" },
+        },
       },
     });
-
-    render(<QuizPage />, { wrapper });
 
     expect(screen.getByText("Loading")).toBeInTheDocument();
   });
+
   test("quizFinished=trueの時QuizResultが表示される", () => {
-    const { wrapper } = setup({
-      quizContent: {
-        isLoading: false,
-        quizzes: [{}, {}],
-        fetchError: null,
-      },
-      quizProgress: {
-        currentIndex: 3,
-        numberOfCorrects: 1,
-        numberOfIncorrects: 1,
-        userAnsers: [{}, {}],
+    renderWithStore(<QuizPage />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizContent: {
+          ...commonOption.preloadedState.quizContent,
+          isLoading: false,
+          fetchError: null,
+        },
+        quizProgress: {
+          ...commonOption.preloadedState.quizProgress,
+          currentIndex: 5,
+        },
       },
     });
-
-    render(<QuizPage />, { wrapper });
 
     expect(screen.getByText("Result")).toBeInTheDocument();
   });
 
   test("通常時はQuizContentが表示される", () => {
-    const { wrapper } = setup({
-      quizContent: {
-        isLoading: false,
-        quizzes: [{}, {}],
-        fetchError: null,
-      },
-      quizProgress: {
-        currentIndex: 0,
-        numberOfCorrects: 0,
-        numberOfIncorrects: 0,
-        userAnsers: [],
+    renderWithStore(<QuizPage />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizContent: {
+          ...commonOption.preloadedState.quizContent,
+          isLoading: false,
+          fetchError: null,
+        },
+        quizProgress: {
+          ...commonOption.preloadedState.quizProgress,
+          currentIndex: 2,
+        },
       },
     });
-
-    render(<QuizPage />, { wrapper });
-
     expect(screen.getByText("Content")).toBeInTheDocument();
   });
 });

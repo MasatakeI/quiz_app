@@ -106,7 +106,7 @@ export const validateQuizSettings = ({
   if (type !== "boolean" && (!amount || amount < 1)) {
     throw new QuizError({
       code: MODEL_ERROR_CODE.VALIDATION,
-      message: "問題数（1以上）を選択してください",
+      message: "問題数を選択してください",
       field: "amount",
     });
   }

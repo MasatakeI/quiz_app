@@ -1,33 +1,25 @@
 // src/test/components/widgets/QuizContent/QuizContentView.test.js
 
-import { screen, render, fireEvent } from "@testing-library/react";
+import { screen, render } from "@testing-library/react";
 
 import { describe, test, expect, vi } from "vitest";
 
 import QuizContentView from "../../../../components/widgets/QuizContent/QuizContentView";
 
-vi.mock("../../../../components/widgets/QuizEmptyState/QuizEmptyState", () => ({
-  default: ({ onReload }) => (
-    <button onClick={onReload}>再読み込みしてください</button>
-  ),
-}));
-
 describe("QuizContentView.jsx", () => {
+  const defaultProps = {
+    title: "スポーツ",
+    getType: "4択",
+    amount: 10,
+    currentDifficulty: "かんたん",
+    type: "multiple",
+    currentQuiz: { question: "test?" },
+    currentIndex: 3,
+    numberOfCorrects: 2,
+    numberOfIncorrects: 1,
+  };
   test("currentQuizがある場合:クイズが表示される", () => {
-    render(
-      <QuizContentView
-        title={"スポーツ"}
-        getType={"4択"}
-        amount={10}
-        currentDifficulty={"かんたん"}
-        type={"multiple"}
-        currentQuiz={{ question: "test?" }}
-        currentIndex={3}
-        numberOfCorrects={2}
-        numberOfIncorrects={1}
-        onReload={vi.fn()}
-      />
-    );
+    render(<QuizContentView {...defaultProps} />);
 
     expect(screen.getByText("スポーツクイズ")).toBeInTheDocument();
     expect(screen.getByText("問題数 10")).toBeInTheDocument();
@@ -40,17 +32,8 @@ describe("QuizContentView.jsx", () => {
   });
 
   test("currentQuizがない場合", () => {
-    render(<QuizContentView currentQuiz={null} onReload={vi.fn()} />);
+    const { container } = render(<QuizContentView currentQuiz={null} />);
 
-    expect(screen.getByText("再読み込みしてください")).toBeInTheDocument();
-  });
-
-  test("再読み込みボタンを押すとonReloadが呼ばれる", () => {
-    const onReload = vi.fn();
-
-    render(<QuizContentView currentQuiz={null} onReload={onReload} />);
-
-    fireEvent.click(screen.getByText("再読み込みしてください"));
-    expect(onReload).toHaveBeenCalledTimes(1);
+    expect(container.firstChild).toBe(null);
   });
 });

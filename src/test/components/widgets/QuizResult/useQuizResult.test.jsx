@@ -1,19 +1,29 @@
 //useQuizResult.test.jsx
 
-import { describe, expect, test, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { act } from "@testing-library/react";
 
-import quizProgressReducer from "../../../../redux/features/quizProgress/quizProgressSlice";
-import quizContentReducer from "../../../../redux/features/quizContent/quizContentSlice";
-import { useQuizResult } from "../../../../components/widgets/QuizResult/useQuizResult";
+import quizProgressReducer, {
+  progressInitialState,
+} from "@/redux/features/quizProgress/quizProgressSlice";
+import quizContentReducer, {
+  contentInitialState,
+} from "@/redux/features/quizContent/quizContentSlice";
 
-import * as quizContentSlice from "../../../../redux/features/quizContent/quizContentSlice";
+import quizSettingsReducer, {
+  settingsInitialState,
+} from "@/redux/features/quizSettings/quizSettingsSlice";
+
+import { useQuizResult } from "@/components/widgets/QuizResult/useQuizResult";
+
 import * as quizCategories from "../../../../constants/quizCategories";
+import * as quizContentThunks from "@/redux/features/quizContent/quizContentThunks";
+
+import { renderHookWithStore } from "@/test/utils/renderHookWithStore";
+import { useParams } from "react-router";
+import { snackbarInitialState } from "@/redux/features/snackbar/snackbarSlice";
 
 const mockNavigate = vi.fn();
-
 vi.mock("react-router", async () => {
   const actual = await vi.importActual("react-router");
 
@@ -21,57 +31,94 @@ vi.mock("react-router", async () => {
     ...actual,
     useNavigate: () => mockNavigate,
     useParams: () => ({ category: "sports" }),
-    useSearchParams: () => [
-      new URLSearchParams({
-        difficulty: "easy",
-        type: "multiple",
-        amount: 10,
-      }),
-    ],
   };
 });
 
-const setup = (preloadedState) => {
-  const store = configureStore({
-    reducer: {
-      quizContent: quizContentReducer,
-      quizProgress: quizProgressReducer,
-    },
-    preloadedState,
+describe("useQuizResult", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  const wrapper = ({ children }) => {
-    return <Provider store={store}>{children}</Provider>;
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const commonOptions = {
+    reducers: {
+      quizContent: quizContentReducer,
+      quizProgress: quizProgressReducer,
+      quizSettings: quizSettingsReducer,
+    },
+    preloadedState: {
+      quizContent: { ...contentInitialState },
+      quizProgress: { ...progressInitialState },
+      quizSettings: { ...settingsInitialState },
+      snackbar: { ...snackbarInitialState },
+    },
   };
 
-  return { store, wrapper };
-};
+  describe("Mapping logic", () => {
+    test("URLパラメータの値を正しく日本語に変換する", () => {
+      const { result } = renderHookWithStore({
+        hook: () => useQuizResult(),
+        ...commonOptions,
+        initialPath: "/quiz/sports?type=boolean&difficulty=hard&amount=5",
+      });
 
-describe("useQuizResult.jsのテスト", () => {
-  describe("handleRetry", () => {
-    test("fetchQuizzesAsyncがdispatchされる", () => {
-      const spy = vi.spyOn(quizContentSlice, "fetchQuizzesAsync");
-      const { wrapper } = setup({
-        quizProgress: {
-          numberOfCorrects: 2,
-        },
+      expect(result.current.getType).toBe("2択");
+    });
+  });
+
+  describe("Edge case(欠落・不正な値)", () => {
+    test("URLパラメータが全くない場合,各値がnullまたはundefinedになる", () => {
+      const { result } = renderHookWithStore({
+        hook: () => useQuizResult(),
+        ...commonOptions,
+
+        initialPath: "/quiz/sports",
+      });
+
+      expect(result.current.amount).toBeNull();
+      expect(result.current.type).toBeNull();
+      expect(result.current.getType).toBe("不明");
+      expect(result.current.quizTitle).toEqual("スポーツ");
+    });
+  });
+
+  test("currentDifficultyにselectorから取得した値が入る", () => {
+    const { result } = renderHookWithStore({
+      hook: () => useQuizResult(),
+      ...commonOptions,
+      preloadedState: {
+        ...commonOptions.preloadedState,
         quizContent: {
-          quizzes: [],
-          fetchError: null,
-          isLoading: false,
+          ...commonOptions.preloadedState.quizContent,
+          quizzes: [{ difficulty: "hard" }],
         },
+      },
+    });
+
+    expect(result.current.currentDifficulty).toEqual("むずかしい");
+  });
+
+  describe("handleRetry", () => {
+    test("fetchQuizzesAsyncがdispatchされる", async () => {
+      const fetchSpy = vi.spyOn(quizContentThunks, "fetchQuizzesAsync");
+
+      const { result } = renderHookWithStore({
+        hook: () => useQuizResult(),
+        ...commonOptions,
+        initialPath: "/quiz/sports?difficulty=easy&type=multiple&amount=10",
       });
 
-      const { result } = renderHook(() => useQuizResult(), { wrapper });
-
-      act(() => {
-        result.current.handleRetry();
+      await act(async () => {
+        await result.current.handleRetry();
       });
 
-      expect(spy).toHaveBeenCalledWith({
+      expect(fetchSpy).toHaveBeenCalledWith({
         category: "sports",
-        difficulty: "easy",
         type: "multiple",
+        difficulty: "easy",
         amount: "10",
       });
     });
@@ -79,11 +126,10 @@ describe("useQuizResult.jsのテスト", () => {
 
   describe("handleGoHome", () => {
     test("ホームページへ戻る", () => {
-      const { wrapper } = setup({
-        quizProgress: { numberOfCorrects: 3 },
+      const { result } = renderHookWithStore({
+        hook: () => useQuizResult(),
+        ...commonOptions,
       });
-
-      const { result } = renderHook(() => useQuizResult(), { wrapper });
 
       act(() => {
         result.current.handleGoHome();
@@ -95,28 +141,39 @@ describe("useQuizResult.jsのテスト", () => {
 
   describe("selector", () => {
     test("値がそのまま返る", () => {
-      const { wrapper } = setup({
-        quizProgress: {
-          userAnswers: [{}, {}, {}],
-          numberOfCorrects: 3,
+      const { result } = renderHookWithStore({
+        hook: () => useQuizResult(),
+        ...commonOptions,
+        preloadedState: {
+          ...commonOptions.preloadedState,
+          quizProgress: {
+            ...commonOptions.preloadedState.quizProgress,
+            numberOfCorrects: 1,
+            numberOfIncorrects: 1,
+            userAnswers: [
+              {
+                question: "a",
+              },
+              {
+                question: "b",
+              },
+            ],
+          },
         },
       });
 
-      const { result } = renderHook(() => useQuizResult(), { wrapper });
-      expect(result.current.numberOfCorrects).toBe(3);
-      expect(result.current.userAnswers.length).toBe(3);
+      expect(result.current.numberOfCorrects).toBe(1);
+      expect(result.current.numberOfIncorrects).toBe(1);
+      expect(result.current.userAnswers.length).toBe(2);
     });
   });
 
   describe("quizTitles", () => {
     test("categoryからタイトルが生成される", () => {
-      vi.spyOn(quizCategories, "getQuizTitle").mockReturnValue("スポーツ");
-
-      const { wrapper } = setup({
-        quizProgress: { numberOfCorrects: 1 },
+      const { result } = renderHookWithStore({
+        hook: () => useQuizResult(),
+        ...commonOptions,
       });
-
-      const { result } = renderHook(() => useQuizResult(), { wrapper });
 
       expect(result.current.quizTitle).toBe("スポーツ");
     });

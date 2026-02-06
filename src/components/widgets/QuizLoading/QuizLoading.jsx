@@ -2,7 +2,7 @@ import React from "react";
 import "./QuizLoading.css";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 
 import {
   selectIsLoading,
@@ -10,14 +10,14 @@ import {
 } from "@/redux/features/quizContent/quizContentSelector";
 
 import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
-import { resetProgress } from "@/redux/features/quizProgress/quizProgressSlice";
+
+import { useNavigationHelper } from "@/hooks/useNavigationHelper";
 
 import Button from "../../common/Button/Button";
 import LoadingSpinner from "../../common/LoadingSpinner/LoadingSpinner";
 
 const QuizLoading = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { category } = useParams();
 
   const isLoading = useSelector(selectIsLoading);
@@ -27,6 +27,8 @@ const QuizLoading = () => {
   const type = params.get("type");
   const difficulty = params.get("difficulty");
   const amount = params.get("amount");
+
+  const { handleGoHome } = useNavigationHelper();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -47,14 +49,7 @@ const QuizLoading = () => {
           >
             再読み込み
           </Button>
-          <Button
-            onClickHandler={() => {
-              dispatch(resetProgress());
-              navigate("/");
-            }}
-          >
-            ホームへ戻る
-          </Button>
+          <Button onClickHandler={handleGoHome}>ホームへ戻る</Button>
         </div>
       </div>
     );

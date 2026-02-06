@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import {
   goToNextQuiz,
-  resetProgress,
   submitAnswer,
 } from "@/redux/features/quizProgress/quizProgressSlice";
 
@@ -73,7 +72,7 @@ export const useQuizContent = () => {
       isCorrect,
       selected: answer,
       correct: currentQuiz.correctAnswer,
-      message: isCorrect ? `正解! ` : `不正解...`,
+      message: isCorrect ? `正解!` : `不正解...`,
     });
 
     const allAnswers = [
