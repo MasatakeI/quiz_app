@@ -7,17 +7,14 @@ import {
   selectShuffledAnswers,
   selectTransilateCurrentDifficulty,
   selectQuizFinished,
-} from "../../../../redux/selectors/quizProgress/quizProgressSelector";
-import { contentInitialState } from "../../../../redux/features/quizContent/quizContentSlice";
+} from "@/redux/features/quizProgress/quizProgressSelector";
+import { contentInitialState } from "@/redux/features/quizContent/quizContentSlice";
 
 import { decodedQuizList } from "../../../fixtures/quizFixture";
 import { progressInitialState } from "../../../../redux/features/quizProgress/quizProgressSlice";
-import {
-  shuffleAnswers,
-  translateCurrentDifficulty,
-} from "../../../../models/QuizModel";
+import { shuffleAnswers, translateCurrentDifficulty } from "@/models/QuizModel";
 
-vi.mock("../../../../models/QuizModel", () => ({
+vi.mock("@/models/QuizModel", () => ({
   shuffleAnswers: vi.fn(() => ["A", "B", "C", "D"]),
   translateCurrentDifficulty: vi.fn(() => "かんたん"),
 }));
