@@ -6,8 +6,7 @@ const QuizResultView = ({
   numberOfIncorrects,
   amount,
   getType,
-  difficultyMap,
-  difficulty,
+  currentDifficulty,
 }) => {
   return (
     <>
@@ -17,7 +16,7 @@ const QuizResultView = ({
 
       <div className="selected-conditions">
         <div>問題数 {amount}</div>
-        <div>Level {difficultyMap[difficulty]}</div>
+        <div>Level {currentDifficulty}</div>
         <div>タイプ {getType}</div>
       </div>
     </>

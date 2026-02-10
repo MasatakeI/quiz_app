@@ -1,6 +1,6 @@
 //page/HomePage/HomePage.test.jsx
 
-import { screen, render, fireEvent, renderHook } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { vi, test, expect, beforeEach, describe } from "vitest";
 
 import HomePage from "../../../../components/page/HomePage/HomePage";
@@ -15,10 +15,24 @@ import { settingsInitialState } from "@/redux/features/quizSettings/quizSettings
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@/components/common/Selection/Selection", () => ({
-  default: ({ label, value, disabled, error }) => (
+  default: ({ label, value, disabled, error, onChange, array }) => (
     <div data-testid={`selection-${label}`}>
-      <span>{label}</span>
-      <span data-testid="value">{value}</span>
+      <label>{label}</label>
+
+      <select
+        data-testid={`select-${label}`}
+        value={value ?? ""}
+        disabled={disabled}
+        onChange={onChange}
+      >
+        <option value="">empty</option>
+        {array?.map((item) => (
+          <option key={item.id} value={item.value}>
+            {item.title}
+          </option>
+        ))}
+      </select>
+
       {disabled && <span>disabled</span>}
       {error && <span data-testid="error">error</span>}
     </div>
@@ -79,17 +93,16 @@ describe("HomePage.jsx", () => {
       },
     ])("$label の Selection が初期値 で表示される", ({ label, key }) => {
       renderWithStore(<HomePage />, commonOption);
-      expect(screen.getByText("クイズに挑戦")).toBeInTheDocument();
 
+      expect(screen.getByText("クイズに挑戦")).toBeInTheDocument();
       expect(screen.getByText(label)).toBeInTheDocument();
 
-      const selection = screen.getByTestId(`selection-${label}`);
-      const valueSpan = selection.querySelector('[data-testid="value"]');
+      const select = screen.getByTestId(`select-${label}`);
 
       const expectedValue = String(
         commonOption.preloadedState.quizSettings[key],
       );
-      expect(valueSpan).toHaveTextContent(expectedValue);
+      expect(select).toHaveValue(expectedValue);
     });
   });
 
@@ -156,5 +169,18 @@ describe("HomePage.jsx", () => {
     );
 
     expect(mockNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  test("セレクトボックスのvalueを変えた時に stateが正しく更新される", async () => {
+    const user = userEvent.setup();
+    const { store } = renderWithStore(<HomePage />, commonOption);
+
+    const difficultySelect = screen.getByTestId("select-レベル");
+
+    await user.selectOptions(difficultySelect, "easy");
+
+    const state = store.getState();
+
+    expect(state.quizSettings.difficulty).toBe("easy");
   });
 });

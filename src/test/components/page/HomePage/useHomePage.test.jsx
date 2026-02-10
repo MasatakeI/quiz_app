@@ -149,16 +149,24 @@ describe("useHomePage.js", () => {
       expect(result.current.items).toHaveLength(4);
     });
 
-    test("type=booleanの時,amountが5になる", () => {
+    test("type=booleanの時,amountが5になりフィールドがdisabled", () => {
       const { store, result } = renderHookWithStore({
         hook: () => useHomePage(),
         ...commonOptions,
+        preloadedState: {
+          ...commonOptions.preloadedState,
+          quizSettings: {
+            ...settingsInitialState,
+            type: "boolean",
+          },
+        },
       });
 
-      const typeItem = result.current.items.find(
-        (item) => item.label === "タイプ",
-      );
+      const typeItem = result.current.items.find((i) => i.label === "タイプ");
 
+      const amountItem = result.current.items.find((i) => i.label === "問題数");
+
+      expect(amountItem.disabled).toBe(true);
       act(() => {
         typeItem.onChange("boolean");
       });
@@ -167,6 +175,64 @@ describe("useHomePage.js", () => {
 
       expect(state.type).toBe("boolean");
       expect(state.amount).toBe(5);
+    });
+
+    test("category / difficylty / amount のonChangeが stateを更新する", () => {
+      const { store, result } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+      });
+
+      const find = (label) =>
+        result.current.items.find((i) => i.label === label);
+
+      act(() => find("ジャンル").onChange("sports"));
+      act(() => find("レベル").onChange("easy"));
+      act(() => find("問題数").onChange("20"));
+
+      const state = store.getState().quizSettings;
+
+      expect(state.category).toBe("sports");
+      expect(state.difficulty).toBe("easy");
+      expect(state.amount).toBe("20");
+    });
+
+    test.each(["category", "type", "difficulty", "amount"])(
+      "settingError.field= %s のitemに errorがつく",
+      (field) => {
+        const { result } = renderHookWithStore({
+          hook: () => useHomePage(),
+          ...commonOptions,
+          preloadedState: {
+            ...commonOptions.preloadedState,
+            quizSettings: {
+              ...settingsInitialState,
+              settingError: { field, message: "error" },
+            },
+          },
+        });
+
+        const item = result.current.items.find((i) => i.key === field);
+
+        expect(item.error).toBe(true);
+      },
+    );
+
+    test("state変更で itemsが更新される", () => {
+      const { result } = renderHookWithStore({
+        hook: () => useHomePage(),
+        ...commonOptions,
+      });
+
+      const before = result.current.items;
+
+      act(() => {
+        result.current.items[0].onChange("sports");
+      });
+
+      const after = result.current.items;
+
+      expect(after).not.toBe(before);
     });
   });
 });

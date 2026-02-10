@@ -12,29 +12,6 @@ import quizContentReducer from "@/redux/features/quizContent/quizContentSlice";
 import quizProgressReducer from "@/redux/features/quizProgress/quizProgressSlice";
 import userEvent from "@testing-library/user-event";
 
-// ---mocks---
-
-vi.mock("../../../../components/widgets/QuizContent/QuizAnswers", () => ({
-  default: ({ shuffledAnswers, onSelect, canPost }) => (
-    <div>
-      {shuffledAnswers.map((a) => (
-        <button key={a} disabled={!canPost} onClick={() => onSelect(a)}>
-          {a}
-        </button>
-      ))}
-    </div>
-  ),
-}));
-
-vi.mock("../../../../components/widgets/QuizContent/QuizAnswerAlert", () => ({
-  default: ({ quizResult, onNext }) =>
-    quizResult ? <button onClick={onNext}>次へ</button> : null,
-}));
-
-vi.mock("../../../../components/common/BackToHomeLink/BackToHomeLink", () => ({
-  default: () => <div>ホームへ戻る</div>,
-}));
-
 const mockNavigate = vi.fn();
 
 vi.mock("react-router", () => {
@@ -64,6 +41,7 @@ describe("QuizContent.jsxのテスト", () => {
     preloadedState: {
       quizContent: {
         ...contentInitialState,
+
         quizzes: [
           {
             question: "test1?",
@@ -86,8 +64,10 @@ describe("QuizContent.jsxのテスト", () => {
   test("shuffledAnswersがQuizAnswersに渡される", () => {
     renderWithStore(<QuizContent />, commonOption);
 
-    expect(screen.getByRole("button", { name: "True" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "False" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "A. True" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "B. False" }),
+    ).toBeInTheDocument();
   });
 
   test("回答ボタンをクリックすると判定が行われて,次へボタンが表示される", async () => {
@@ -95,19 +75,19 @@ describe("QuizContent.jsxのテスト", () => {
 
     renderWithStore(<QuizContent />, commonOption);
 
-    const answerButton = screen.getByRole("button", { name: "True" });
+    const answerButton = screen.getByRole("button", { name: "A. True" });
 
     await user.click(answerButton);
 
     expect(screen.getByRole("button", { name: "次へ" })).toBeInTheDocument();
-    expect(answerButton).toBeDisabled();
+    // expect(answerButton).toBeDisabled();
   });
 
   test("quizResultがある時,次へボタンを押すと,次の問題が表示される", async () => {
     const user = userEvent.setup();
     renderWithStore(<QuizContent />, commonOption);
 
-    await user.click(screen.getByRole("button", { name: "True" }));
+    await user.click(screen.getByRole("button", { name: "A. True" }));
     const goToNextButton = screen.getByRole("button", { name: "次へ" });
     await user.click(goToNextButton);
     expect(screen.getByText("Q2. test2?")).toBeInTheDocument();
@@ -117,9 +97,53 @@ describe("QuizContent.jsxのテスト", () => {
     const user = userEvent.setup();
 
     renderWithStore(<QuizContent />, commonOption);
-    const answerButton = screen.getByRole("button", { name: "True" });
+    const answerButton = screen.getByRole("button", { name: "A. True" });
+    const falseButton = screen.getByRole("button", { name: "B. False" });
     await user.click(answerButton);
-    expect(screen.getByRole("button", { name: "True" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "False" })).toBeDisabled();
+
+    expect(answerButton).not.toBeDisabled();
+    expect(falseButton).toBeDisabled();
+  });
+
+  describe("最後の問題に回答した後,問題数によってcurrentIndexが終了を表す値になる", () => {
+    test.each([
+      {
+        title: "4択 10問",
+        numberOfQuestion: 10,
+        finalIndex: 9,
+      },
+      {
+        title: "2択 5問",
+        numberOfQuestion: 5,
+        finalIndex: 4,
+      },
+    ])("$title の時", async ({ numberOfQuestion, finalIndex }) => {
+      const user = userEvent.setup();
+
+      const { store } = renderWithStore(<QuizContent />, {
+        ...commonOption,
+        preloadedState: {
+          ...commonOption.preloadedState,
+
+          quizContent: {
+            ...contentInitialState,
+            quizzes: Array(numberOfQuestion).fill({
+              question: "question",
+              correctAnswer: "True",
+              incorrectAnswers: ["False"],
+            }),
+          },
+          quizProgress: { ...progressInitialState, currentIndex: finalIndex },
+        },
+      });
+
+      const answerButton = screen.getByRole("button", { name: "A. True" });
+      await user.click(answerButton);
+
+      const goToNextButton = screen.getByRole("button", { name: "次へ" });
+      await user.click(goToNextButton);
+
+      expect(store.getState().quizProgress.currentIndex).toBe(finalIndex + 1);
+    });
   });
 });

@@ -25,11 +25,8 @@ vi.mock("@/components/layout/Footer/Footer", () => ({
   default: () => <div data-testid="footer">Footer</div>,
 }));
 
-vi.mock("@/components/page/HomePage/HomePage", () => ({
-  default: () => <div data-testid="home-page">HomePage</div>,
-}));
-vi.mock("@/components/page/QuizPage/QuizPage", () => ({
-  default: () => <div data-testid="quiz-page">QuizPage</div>,
+vi.mock("@/AppRoutes", () => ({
+  default: () => <div data-testid="app-routes">AppRoutes</div>,
 }));
 
 vi.mock("@/components/common/SimpleSnackbar/SimpleSnackbar", () => ({
@@ -65,7 +62,7 @@ describe("App.jsx", () => {
   };
 
   describe("初期パス / HomePageとレイアウトの基本コンポーネントが描画される", () => {
-    test.each(["header", "footer", "simple-snackbar", "home-page"])(
+    test.each(["header", "footer", "simple-snackbar", "app-routes"])(
       "%s",
       (testId) => {
         renderWithStore(
@@ -80,19 +77,7 @@ describe("App.jsx", () => {
     );
   });
 
-  test("/quiz/:category にアクセスすると QuizPage が表示される", () => {
-    renderWithStore(
-      <MemoryRouter initialEntries={["/quiz/sports"]}>
-        <App />
-      </MemoryRouter>,
-      commonOptions,
-    );
-
-    expect(screen.getByTestId("quiz-page")).toBeInTheDocument();
-  });
-
   test("snackbarが開いているとき,メッセージが正しく表示される", () => {
-    const user = userEvent.setup();
     renderWithStore(
       <MemoryRouter initialEntries={["/quiz/sports"]}>
         <App />
@@ -109,7 +94,6 @@ describe("App.jsx", () => {
       },
     );
 
-    expect(screen.getByTestId("quiz-page")).toBeInTheDocument();
     expect(screen.getByTestId("simple-snackbar")).toHaveTextContent("error");
   });
   test("snackbarのCloseボタンを押すと,snackbarが閉じる", async () => {
@@ -136,16 +120,5 @@ describe("App.jsx", () => {
 
     expect(screen.getByTestId("simple-snackbar").firstChild).toBe(null);
     expect(store.getState().snackbar.snackbarOpen).toBe(false);
-  });
-
-  test("存在しないパスにアクセスした時HomePageにリダイレクトする", () => {
-    renderWithStore(
-      <MemoryRouter initialEntries={["/@@@"]}>
-        <App />
-      </MemoryRouter>,
-      commonOptions,
-    );
-
-    expect(screen.getByTestId("home-page")).toBeInTheDocument();
   });
 });

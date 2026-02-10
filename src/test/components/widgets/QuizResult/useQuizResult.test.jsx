@@ -85,22 +85,6 @@ describe("useQuizResult", () => {
     });
   });
 
-  test("currentDifficultyにselectorから取得した値が入る", () => {
-    const { result } = renderHookWithStore({
-      hook: () => useQuizResult(),
-      ...commonOptions,
-      preloadedState: {
-        ...commonOptions.preloadedState,
-        quizContent: {
-          ...commonOptions.preloadedState.quizContent,
-          quizzes: [{ difficulty: "hard" }],
-        },
-      },
-    });
-
-    expect(result.current.currentDifficulty).toEqual("むずかしい");
-  });
-
   describe("handleRetry", () => {
     test("fetchQuizzesAsyncがdispatchされる", async () => {
       const fetchSpy = vi.spyOn(quizContentThunks, "fetchQuizzesAsync");

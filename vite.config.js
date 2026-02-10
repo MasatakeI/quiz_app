@@ -26,4 +26,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  coverage: {
+    provider: "v8",
+    reporter: ["text", "html", "json"],
+    reportsDirectory: "./coverage",
+    exclude: [
+      "node_modules/",
+      "src/test/",
+      "**/*.test.*",
+      "**/*.spec.*",
+      "src/main.jsx",
+    ],
+  },
 });

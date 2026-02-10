@@ -24,7 +24,6 @@ export const useQuizResult = () => {
   const numberOfCorrects = useSelector(selectNumberOfCorrects);
   const numberOfIncorrects = useSelector(selectNumberOfIncorrects);
   const userAnswers = useSelector(selectUserAnswers);
-  const currentDifficulty = useSelector(selectTransilateCurrentDifficulty);
 
   const quizTitle = getQuizTitle(category);
 
@@ -40,13 +39,21 @@ export const useQuizResult = () => {
   };
   const getType = typeMap[type] || "不明";
 
+  const difficultyMap = {
+    easy: "かんたん",
+    medium: "ふつう",
+    hard: "むずかしい",
+  };
+
+  const getDifficulty = difficultyMap[difficulty] || "不明";
+
   const handleRetry = async () => {
     dispatch(fetchQuizzesAsync({ category, type, difficulty, amount }));
   };
 
   return {
     quizTitle,
-    currentDifficulty,
+
     userAnswers,
     numberOfCorrects,
     numberOfIncorrects,
@@ -58,5 +65,6 @@ export const useQuizResult = () => {
     userAnswers,
     indexMap,
     getType,
+    getDifficulty,
   };
 };

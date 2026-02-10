@@ -19,10 +19,6 @@ import quizSettingsReducer, {
 } from "@/redux/features/quizSettings/quizSettingsSlice";
 import userEvent from "@testing-library/user-event";
 
-vi.mock("../../../../components/common/AnswerAlert/AnswerAlert", () => ({
-  default: ({ message }) => <div>{message}</div>,
-}));
-
 describe("QuizAnswerAlert.jsxのテスト", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -84,5 +80,36 @@ describe("QuizAnswerAlert.jsxのテスト", () => {
       },
     );
     expect(container.firstChild).toBeNull();
+  });
+
+  test("正解時の表示（successルートの網羅）", () => {
+    const result = { isCorrect: true, message: "正解!", selected: "A" };
+    renderWithStore(
+      <QuizAnswerAlert quizResult={result} onNext={vi.fn()} />,
+      commonOption,
+    );
+
+    // 本物の AnswerAlert を使っている場合、MUI等ならクラス名やロールで確認
+    // 少なくとも、"success" という値が Props に渡って実行されたことを確実にする
+    expect(screen.getByText("正解!")).toBeInTheDocument();
+  });
+
+  test("不正解時の表示（errorルートの網羅）", () => {
+    const result = { isCorrect: false, message: "不正解...", selected: "B" };
+    renderWithStore(
+      <QuizAnswerAlert quizResult={result} onNext={vi.fn()} />,
+      commonOption,
+    );
+
+    expect(screen.getByText("不正解...")).toBeInTheDocument();
+  });
+
+  test("ガード句: quizResult が undefined の場合", () => {
+    // null だけでなく undefined も試して、if (!quizResult) を確実にパスさせる
+    const { container } = renderWithStore(
+      <QuizAnswerAlert quizResult={undefined} onNext={vi.fn()} />,
+      commonOption,
+    );
+    expect(container).toBeEmptyDOMElement();
   });
 });

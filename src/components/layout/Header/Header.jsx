@@ -20,7 +20,7 @@ const Header = () => {
   }, []);
 
   return (
-    <div className={`header ${isScrolled ? "scrolled" : ""}`}>
+    <div role="banner" className={`header ${isScrolled ? "scrolled" : ""}`}>
       <Tooltip title="ホームへ戻る">
         <button
           onClick={handleGoHome}

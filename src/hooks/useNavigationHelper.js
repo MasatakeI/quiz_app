@@ -1,9 +1,9 @@
 // src/hooks/useNavigationHelper.js
 
-import { resetQuizContent } from "@/redux/features/quizContent/quizContentSlice";
-import { resetQuizSettings } from "@/redux/features/quizSettings/quizSettingsSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
+import { resetQuizContent } from "@/redux/features/quizContent/quizContentSlice";
+import { resetQuizSettings } from "@/redux/features/quizSettings/quizSettingsSlice";
 
 export const useNavigationHelper = () => {
   const dispatch = useDispatch();

@@ -19,24 +19,25 @@ import { renderWithStore } from "@/test/utils/renderWithStore";
 
 import * as quizContentThunks from "@/redux/features/quizContent/quizContentThunks";
 import { settingsInitialState } from "@/redux/features/quizSettings/quizSettingsSlice";
+import { useSearchParams } from "react-router";
 
 vi.mock("../../../../components/common/LoadingSpinner/LoadingSpinner", () => ({
   default: () => <div data-testid="loading-spinner"></div>,
 }));
 
-const mockNavigate = vi.fn();
+const { mockUseSearchParams, mockNavigate } = vi.hoisted(() => ({
+  mockUseSearchParams: vi.fn(),
+  mockNavigate: vi.fn(),
+}));
 
-vi.mock("react-router", () => {
-  const actual = vi.importActual("react-router");
-
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual("react-router");
   return {
     ...actual,
     useNavigate: () => mockNavigate,
     useParams: () => ({ category: "sports" }),
-    useSearchParams: () => [
-      new URLSearchParams("type=multiple&difficulty=easy&amount=10"),
-      vi.fn(),
-    ],
+    // 2. 定義した mock 関数を返すようにする
+    useSearchParams: mockUseSearchParams,
   };
 });
 
@@ -59,6 +60,10 @@ describe("QuizLoading.jsxのテスト", () => {
   };
 
   test("正常系：データ取得成功時は何も表示しない", () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams("type=multiple&difficulty=easy&amount=10"),
+      vi.fn(),
+    ]);
     const { container } = renderWithStore(<QuizLoading />, {
       ...commonOption,
       preloadedState: {
@@ -71,6 +76,10 @@ describe("QuizLoading.jsxのテスト", () => {
   });
 
   test("isLoading===trueの時,LoadingSpinnerが表示される", () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams("type=multiple&difficulty=easy&amount=10"),
+      vi.fn(),
+    ]);
     renderWithStore(<QuizLoading />, {
       ...commonOption,
       preloadedState: {
@@ -82,7 +91,7 @@ describe("QuizLoading.jsxのテスト", () => {
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
   });
 
-  test("isLoading===falseでfetchErrorがある時,メッセージと再読み込みボタンとホームへ戻るボタンが表示される", () => {
+  test("isLoading===falseでfetchErrorがある時,メッセージ 再読み込みボタン ホームへ戻るボタンが表示される", () => {
     renderWithStore(<QuizLoading />, {
       ...commonOption,
       preloadedState: {
@@ -95,7 +104,6 @@ describe("QuizLoading.jsxのテスト", () => {
     const goHomeButton = screen.getByRole("button", { name: "ホームへ戻る" });
 
     expect(screen.getByText("エラー")).toBeInTheDocument();
-
     expect(reloadButton).toBeInTheDocument();
     expect(goHomeButton).toBeInTheDocument();
   });
@@ -124,7 +132,32 @@ describe("QuizLoading.jsxのテスト", () => {
     });
   });
 
+  test("パラメータが欠落している状態で再読み込みを押しても動作する", async () => {
+    const user = userEvent.setup();
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams(""),
+      vi.fn(),
+    ]);
+
+    const { dispatchSpy } = renderWithStore(<QuizLoading />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizContent: { isLoading: false, fetchError: { message: "エラー" } },
+      },
+    });
+
+    const reloadButton = screen.getByRole("button", { name: "再読み込み" });
+    await user.click(reloadButton);
+
+    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Function));
+  });
+
   test("ホームへ戻るボタンを押すとhandleGoHomeが呼ばれる", async () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams("type=multiple&difficulty=easy&amount=10"),
+      vi.fn(),
+    ]);
     const { dispatchSpy } = renderWithStore(<QuizLoading />, {
       ...commonOption,
       preloadedState: {
