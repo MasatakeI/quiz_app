@@ -4,8 +4,8 @@ import { createQuizzes, validateQuizSettings } from "@/models/QuizModel";
 import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunks";
 
 import { showSnackbar } from "@/redux/features/snackbar/snackbarSlice";
-import { QuizError } from "@/models/errors/QuizError";
-import { MODEL_ERROR_CODE } from "@/models/errors/quizErrorCode";
+import { QuizError } from "@/models/errors/quiz/QuizError";
+import { QUIZ_ERROR_CODE } from "@/models/errors/quiz/quizErrorCode";
 
 vi.mock("@/models/QuizModel", () => ({
   createQuizzes: vi.fn(),
@@ -28,7 +28,7 @@ const dispatch = vi.fn();
 const getState = vi.fn();
 
 const mockSuccess = (fn, value) => fn.mockResolvedValue(value);
-const mockFailure = (fn, error) => fn.mockRejectedValue(error);
+// const mockFailure = (fn, error) => fn.mockRejectedValue(error);
 
 const callThunk = async (thunk, params) =>
   thunk(params)(dispatch, getState, undefined);
@@ -73,7 +73,7 @@ describe("quizContentThunks", () => {
   test("失敗:createQuizzesが失敗した時, rejected状態になる", async () => {
     createQuizzes.mockRejectedValue(
       new QuizError({
-        code: MODEL_ERROR_CODE.NETWORK,
+        code: QUIZ_ERROR_CODE.NETWORK,
         message: "ネットワークエラーが発生しました",
       }),
     );
@@ -87,7 +87,7 @@ describe("quizContentThunks", () => {
 
     expect(result.type).toBe("quizContent/fetchQuizzes/rejected");
     expect(result.payload).toEqual({
-      code: MODEL_ERROR_CODE.NETWORK,
+      code: QUIZ_ERROR_CODE.NETWORK,
       message: "ネットワークエラーが発生しました",
       field: undefined,
     });

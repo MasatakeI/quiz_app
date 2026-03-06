@@ -14,11 +14,10 @@ import {
 
 import { undecodedQuizList, decodedQuizList } from "../fixtures/quizFixture";
 import { fetchQuizzes } from "@/data_fetcher/QuizFetcher";
-import { QuizError } from "@/models/errors/QuizError";
+import { QuizError } from "@/models/errors/quiz/QuizError";
+import { QUIZ_ERROR_CODE } from "@/models/errors/quiz/quizErrorCode";
 
-import { MODEL_ERROR_CODE } from "@/models/errors/quizErrorCode";
-
-vi.mock("../../data_fetcher/QuizFetcher");
+vi.mock("@/data_fetcher/QuizFetcher");
 
 describe("QuizModel.jsのテスト", () => {
   beforeEach(() => {
@@ -34,7 +33,7 @@ describe("QuizModel.jsのテスト", () => {
 
     test("失敗ケース:quizDataがない場合エラーをスローする", () => {
       const error = new QuizError({
-        code: MODEL_ERROR_CODE.INVALID_DATA,
+        code: QUIZ_ERROR_CODE.INVALID_DATA,
         message: "クイズデータがありません",
       });
       expect(() => createFormatQuizData()).toThrow(error);
@@ -52,7 +51,7 @@ describe("QuizModel.jsのテスト", () => {
           [field]: undefined,
         };
         const error = new QuizError({
-          code: MODEL_ERROR_CODE.INVALID_DATA,
+          code: QUIZ_ERROR_CODE.INVALID_DATA,
           message: `クイズデータの必須フィールドが欠落しています: ${field}`,
         });
         expect(() => createFormatQuizData(incompleteQuizData)).toThrow(error);
@@ -67,7 +66,7 @@ describe("QuizModel.jsのテスト", () => {
     });
     test("クイズデータが配列でない場合QuizErrorをスローする", () => {
       const error = new QuizError({
-        code: MODEL_ERROR_CODE.INVALID_DATA,
+        code: QUIZ_ERROR_CODE.INVALID_DATA,
         message: "クイズリストが配列ではありません",
       });
       expect(() => createFormattedQuizList(undecodedQuizList[0])).toThrow(
@@ -97,7 +96,7 @@ describe("QuizModel.jsのテスト", () => {
     test("失敗:クイズデータリストがなかった場合", async () => {
       fetchQuizzes.mockResolvedValue([]);
       const error = new QuizError({
-        code: MODEL_ERROR_CODE.NOT_FOUND,
+        code: QUIZ_ERROR_CODE.NOT_FOUND,
         message: "該当するクイズが見つかりませんでした",
       });
       await expect(
@@ -113,7 +112,7 @@ describe("QuizModel.jsのテスト", () => {
         await createQuizzes("sports", "multiple", "easy", 10);
       } catch (error) {
         expect(error).toBeInstanceOf(QuizError);
-        expect(error.code).toBe(MODEL_ERROR_CODE.NETWORK);
+        expect(error.code).toBe(QUIZ_ERROR_CODE.NETWORK);
         expect(error.message).toBe("クイズの取得に失敗しました");
         expect(error.cause).toBe(originalError);
       }
@@ -158,7 +157,7 @@ describe("QuizModel.jsのテスト", () => {
     ])(`$title`, ({ params, field, message }) => {
       expect(() => validateQuizSettings(params)).toThrow(
         new QuizError({
-          code: MODEL_ERROR_CODE.VALIDATION,
+          code: QUIZ_ERROR_CODE.VALIDATION,
           message: message,
           field: field,
         }),

@@ -2,7 +2,7 @@ import { describe, test, expect, vi, beforeEach } from "vitest";
 
 import { createModelThunk } from "@/redux/features/utils/createModelThunk";
 
-import { QuizError } from "@/models/errors/QuizError";
+import { QuizError } from "@/models/errors/quiz/QuizError";
 
 const dispatch = vi.fn();
 const getState = vi.fn();

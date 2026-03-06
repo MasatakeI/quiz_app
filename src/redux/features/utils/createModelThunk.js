@@ -1,5 +1,4 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { QuizError } from "../../../models/errors/QuizError";
 
 export const createModelThunk = (type, fn, options) =>
   createAsyncThunk(
@@ -8,7 +7,7 @@ export const createModelThunk = (type, fn, options) =>
       try {
         return await fn(arg, thunkApi);
       } catch (error) {
-        if (error instanceof QuizError) {
+        if (error?.code && error?.message) {
           return thunkApi.rejectWithValue({
             code: error.code,
             message: error.message,

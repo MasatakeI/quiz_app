@@ -1,0 +1,10 @@
+// src/models/errors/authErrorCode.js
+
+export const AUTH_ERROR_CODE = {
+  VALIDATION: "VALIDATION",
+  AUTH_INVALID: "AUTH_INVALID",
+  NOT_FOUND: "NOT_FOUND",
+  NETWORK: "NETWORK",
+  EXTERNAL: "EXTERNAL",
+  UNKNOWN: "UNKNOWN",
+};

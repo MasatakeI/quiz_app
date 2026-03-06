@@ -5,13 +5,13 @@ import { fetchQuizzes } from "../data_fetcher/QuizFetcher";
 import he from "he";
 import _ from "lodash";
 
-import { QuizError } from "./errors/QuizError";
-import { MODEL_ERROR_CODE } from "./errors/quizErrorCode";
+import { QuizError } from "./errors/quiz/QuizError";
+import { QUIZ_ERROR_CODE } from "./errors/quiz/quizErrorCode";
 
 export const createFormatQuizData = (quizData) => {
   if (!quizData) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.INVALID_DATA,
+      code: QUIZ_ERROR_CODE.INVALID_DATA,
       message: "クイズデータがありません",
     });
   }
@@ -27,7 +27,7 @@ export const createFormatQuizData = (quizData) => {
 
   if (missingFields.length > 0) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.INVALID_DATA,
+      code: QUIZ_ERROR_CODE.INVALID_DATA,
       message: `クイズデータの必須フィールドが欠落しています: ${missingFields.join(", ")}`,
     });
   }
@@ -45,7 +45,7 @@ export const createFormatQuizData = (quizData) => {
 export const createFormattedQuizList = (quizDataList) => {
   if (!Array.isArray(quizDataList)) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.INVALID_DATA,
+      code: QUIZ_ERROR_CODE.INVALID_DATA,
       message: "クイズリストが配列ではありません",
     });
   }
@@ -58,7 +58,7 @@ export const createQuizzes = async (category, type, difficulty, amount) => {
 
     if (!quizDataList || quizDataList.length === 0) {
       throw new QuizError({
-        code: MODEL_ERROR_CODE.NOT_FOUND,
+        code: QUIZ_ERROR_CODE.NOT_FOUND,
         message: "該当するクイズが見つかりませんでした",
       });
     }
@@ -68,7 +68,7 @@ export const createQuizzes = async (category, type, difficulty, amount) => {
       throw error;
     }
     throw new QuizError({
-      code: MODEL_ERROR_CODE.NETWORK,
+      code: QUIZ_ERROR_CODE.NETWORK,
       message: "クイズの取得に失敗しました",
       cause: error,
     });
@@ -83,21 +83,21 @@ export const validateQuizSettings = ({
 }) => {
   if (!category) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.VALIDATION,
+      code: QUIZ_ERROR_CODE.VALIDATION,
       message: "ジャンルを選択してください",
       field: "category",
     });
   }
   if (!type) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.VALIDATION,
+      code: QUIZ_ERROR_CODE.VALIDATION,
       message: "タイプを選択してください",
       field: "type",
     });
   }
   if (!difficulty) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.VALIDATION,
+      code: QUIZ_ERROR_CODE.VALIDATION,
       message: "レベルを選択してください",
       field: "difficulty",
     });
@@ -105,7 +105,7 @@ export const validateQuizSettings = ({
   // typeがboolean（二択）以外で、amount（問題数）が未設定、または1未満の場合
   if (type !== "boolean" && (!amount || amount < 1)) {
     throw new QuizError({
-      code: MODEL_ERROR_CODE.VALIDATION,
+      code: QUIZ_ERROR_CODE.VALIDATION,
       message: "問題数を選択してください",
       field: "amount",
     });

@@ -1,0 +1,307 @@
+import { describe, test, expect, vi, beforeEach } from "vitest";
+
+import {
+  createHistory,
+  addHistory,
+  fetchHistories,
+  deleteHistory,
+} from "@/models/QuizHistoryModel";
+
+import {
+  newHistory,
+  newHistoryInput,
+} from "./__fixtures__/firestoreHistoryData";
+
+import {
+  addDoc,
+  deleteDoc,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+} from "firebase/firestore";
+
+import { QuizHistoryError } from "@/models/errors/quizHistory/quizHistoryError";
+import { QUIZ_HISTORY_ERROR_CODE } from "@/models/errors/quizHistory/quizHistoryErrorCode";
+
+vi.mock("firebase/firestore", () => ({
+  addDoc: vi.fn(),
+  deleteDoc: vi.fn(),
+  getDoc: vi.fn(),
+  getDocs: vi.fn(),
+  query: vi.fn(),
+  serverTimestamp: vi.fn(() => () => "server-timestamp-placeholder"),
+  orderBy: vi.fn(),
+  doc: vi.fn(),
+
+  getFirestore: vi.fn(),
+  collection: vi.fn(),
+}));
+
+vi.mock("@/firebase", () => ({
+  quizHistoryRef: "mock-collection-ref",
+}));
+
+const mockDocRef = { id: newHistory.id };
+const mockSnapshot = {
+  exists: () => true,
+  id: newHistory.id,
+  data: () => ({
+    ...newHistoryInput,
+    date: newHistory.date,
+  }),
+};
+
+const mockQuery = {};
+
+// ヘルパー
+const expectHistory = (history) => {
+  return {
+    id: history.id,
+    category: history.category,
+    date: history.expectedDate,
+    difficulty: history.difficulty,
+    score: history.score,
+    totalQuestions: history.totalQuestions,
+    accuracy: history.accuracy,
+  };
+};
+
+const mockGetDocSuccess = () => {
+  getDoc.mockResolvedValue(mockSnapshot);
+};
+
+const mockAddHistorySuccess = () => {
+  addDoc.mockResolvedValue(mockDocRef);
+  mockGetDocSuccess();
+};
+
+describe("QuizHistoryModel", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("createHistory", () => {
+    test("正常系:firestoreデータを整形し フォーマットされたクイズ結果情報を返す", () => {
+      const result = createHistory(newHistory.id, newHistory);
+      expect(result).toEqual(expectHistory(newHistory));
+    });
+
+    test("異常系:壊れたデータの場合 QuizHistoryErrorをスローする", () => {
+      expect(() =>
+        createHistory(newHistory.id, { ...newHistory, score: "@@@" }),
+      ).toThrow(
+        new QuizHistoryError({
+          code: QUIZ_HISTORY_ERROR_CODE.INVALID_DATA,
+          message: "無効なデータです",
+        }),
+      );
+    });
+  });
+
+  describe("addHistory", () => {
+    test("正常系:クイズ結果を保存し 保存した結果を返す", async () => {
+      mockAddHistorySuccess();
+
+      const result = await addHistory(newHistoryInput);
+
+      expect(result).toEqual(expectHistory(newHistory));
+
+      expect(addDoc).toHaveBeenCalledWith(
+        "mock-collection-ref",
+        expect.objectContaining({
+          ...newHistoryInput,
+          date: expect.any(Function),
+        }),
+      );
+    });
+    describe("異常系:", () => {
+      test.each([
+        {
+          title: "スコアがundefined",
+          setup: () => {},
+          resultData: {},
+          code: QUIZ_HISTORY_ERROR_CODE.VALIDATION,
+          message: "スコア情報が不足しています",
+        },
+        {
+          title: "追加後データが存在しない",
+          setup: () => {
+            addDoc.mockResolvedValue(mockDocRef);
+            getDoc.mockResolvedValue({ exists: () => false });
+          },
+          resultData: mockSnapshot.data(),
+          code: QUIZ_HISTORY_ERROR_CODE.UNKNOWN,
+          message: "クイズ結果の追加に失敗しました",
+        },
+        {
+          title: "addDocが失敗 (通信エラー Firebase SDKエラー)",
+          setup: () => {
+            const sdkError = new Error("Firebase unavalilable");
+            sdkError.code = "unavailable";
+            addDoc.mockRejectedValue(sdkError);
+          },
+          resultData: newHistoryInput,
+          code: QUIZ_HISTORY_ERROR_CODE.NETWORK,
+          message: "ネットワーク接続がありません",
+        },
+        {
+          title: "getDocが失敗 (通信エラー Firebase SDKエラー)",
+          setup: () => {
+            addDoc.mockResolvedValue(mockDocRef);
+            const sdkError = new Error("Firebase unavalilable");
+            sdkError.code = "unavailable";
+            getDoc.mockRejectedValue(sdkError);
+          },
+          resultData: newHistoryInput,
+          code: QUIZ_HISTORY_ERROR_CODE.NETWORK,
+          message: "ネットワーク接続がありません",
+        },
+      ])("$title", async ({ setup, resultData, code, message }) => {
+        setup?.();
+
+        await expect(addHistory(resultData)).rejects.toEqual(
+          expect.objectContaining({
+            code,
+            message,
+            name: "QuizHistoryError",
+          }),
+        );
+      });
+    });
+  });
+
+  describe("fetchHistories", () => {
+    test("正常系:histories配列を返す", async () => {
+      query.mockReturnValue(mockQuery);
+      getDocs.mockResolvedValue({
+        docs: [
+          {
+            id: newHistory.id,
+            data: () => mockSnapshot.data(),
+          },
+          {
+            id: 2,
+            data: () => mockSnapshot.data(),
+          },
+        ],
+      });
+
+      const result = await fetchHistories();
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual(expectHistory(newHistory));
+
+      expect(query).toHaveBeenCalledWith(
+        "mock-collection-ref",
+        orderBy("date", "desc"),
+      );
+
+      expect(orderBy).toHaveBeenCalledWith("date", "desc");
+    });
+
+    test("異常系:データベースに配列が存在しない場合 空配列を返す", async () => {
+      query.mockReturnValue(mockQuery);
+
+      getDocs.mockResolvedValue({
+        docs: [],
+      });
+
+      const result = await fetchHistories();
+      expect(result).toEqual([]);
+    });
+
+    test("異常系:getDocsが失敗 (通信エラー Firebase SDKエラー)", async () => {
+      query.mockReturnValue(mockQuery);
+
+      const sdkError = new Error("Firebase unavalilable");
+      sdkError.code = "unavailable";
+      getDocs.mockRejectedValue(sdkError);
+
+      await expect(fetchHistories()).rejects.toEqual(
+        expect.objectContaining({
+          code: QUIZ_HISTORY_ERROR_CODE.NETWORK,
+          message: "ネットワーク接続がありません",
+          name: "QuizHistoryError",
+        }),
+      );
+    });
+  });
+
+  describe("deleteHistory", () => {
+    test("正常系:指定したidの historyを削除し 削除したhistory情報を返す", async () => {
+      doc.mockReturnValue(mockDocRef);
+      getDoc.mockResolvedValue(mockSnapshot);
+      deleteDoc.mockResolvedValue();
+
+      const result = await deleteHistory(mockDocRef.id);
+      expect(result).toEqual(expectHistory(newHistory));
+
+      expect(doc).toHaveBeenCalledWith("mock-collection-ref", mockDocRef.id);
+      expect(getDoc).toHaveBeenCalledWith(mockDocRef);
+      expect(deleteDoc).toHaveBeenCalledWith(mockDocRef);
+    });
+
+    describe("異常系:", () => {
+      test.each([
+        {
+          title: "削除対象のデータが存在しない",
+          setup: () => {
+            doc.mockReturnValue(mockDocRef);
+            getDoc.mockResolvedValue({ exists: () => false });
+          },
+          id: "mock-id-4",
+          code: QUIZ_HISTORY_ERROR_CODE.NOT_FOUND,
+          message: "削除対象のデータが見つかりませんでした",
+        },
+
+        {
+          title: "getDocが失敗 (通信エラー Firebase SDKエラー)",
+          setup: () => {
+            doc.mockReturnValue(mockDocRef);
+            const sdkError = new Error("Firebase unavalilable");
+            sdkError.code = "unavailable";
+            getDoc.mockRejectedValue(sdkError);
+          },
+          id: "mock-id-4",
+          code: QUIZ_HISTORY_ERROR_CODE.NETWORK,
+          message: "ネットワーク接続がありません",
+        },
+
+        {
+          title: "deleteDocが失敗 (通信エラー Firebase SDKエラー)",
+          setup: () => {
+            doc.mockReturnValue(mockDocRef);
+            getDoc.mockResolvedValue(mockSnapshot);
+
+            const sdkError = new Error("Firebase unavalilable");
+            sdkError.code = "unavailable";
+            deleteDoc.mockRejectedValue(sdkError);
+          },
+          id: "mock-id-4",
+          code: QUIZ_HISTORY_ERROR_CODE.NETWORK,
+          message: "ネットワーク接続がありません",
+        },
+        {
+          title: "サーバーから取得したデータが壊れている場合",
+          setup: () => {
+            doc.mockReturnValue(mockDocRef);
+            getDoc.mockResolvedValue({
+              exists: () => true,
+              data: () => ({ ...newHistoryInput, score: "invalid" }), // 不正データ
+            });
+          },
+          id: "mock-id-4",
+          code: QUIZ_HISTORY_ERROR_CODE.INVALID_DATA,
+          message: "無効なデータです",
+        },
+      ])("$title", async ({ setup, id, code, message }) => {
+        setup?.();
+
+        await expect(deleteHistory(id)).rejects.toEqual(
+          expect.objectContaining({ code, message, name: "QuizHistoryError" }),
+        );
+      });
+    });
+  });
+});
