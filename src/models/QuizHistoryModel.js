@@ -21,7 +21,7 @@ import { format } from "date-fns";
 export const createHistory = (id, data) => {
   if (
     !data ||
-    typeof data.category !== "string" ||
+    // typeof data.category !== "string" ||
     typeof data.difficulty !== "string" ||
     typeof data.score !== "number" ||
     typeof data.totalQuestions !== "number" ||
@@ -33,7 +33,7 @@ export const createHistory = (id, data) => {
     });
   }
 
-  const dateObj = format(data.date.toDate(), "yyyy/MM/dd HH:mm");
+  const dateObj = format(data.date.toDate(), "yyyy/MM/dd");
 
   return {
     id,

@@ -7,6 +7,7 @@ import _ from "lodash";
 
 import { QuizError } from "./errors/quiz/QuizError";
 import { QUIZ_ERROR_CODE } from "./errors/quiz/quizErrorCode";
+import { DIFFICULTY_LABELS } from "@/constants/quizTranslations";
 
 export const createFormatQuizData = (quizData) => {
   if (!quizData) {
@@ -127,11 +128,5 @@ export const shuffleAnswers = (quiz) => {
 };
 
 export const translateCurrentDifficulty = (quiz) => {
-  const difficultyMap = {
-    easy: "かんたん",
-    medium: "ふつう",
-    hard: "むずかしい",
-  };
-
-  return difficultyMap[quiz.difficulty] ?? "不明";
+  return DIFFICULTY_LABELS[quiz.difficulty] ?? "不明";
 };

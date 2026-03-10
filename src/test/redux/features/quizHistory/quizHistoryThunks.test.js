@@ -45,7 +45,7 @@ const SUCCESS_CASES = [
     params: { resultData: mockNewQuizHistory },
     expected: mockNewQuizHistory,
     type: "quizHistory/addHistory/fulfilled",
-    snackbarMessage: "クイズ結果の保存に成功しました",
+    snackbarMessage: "クイズ結果を保存しました",
   },
   {
     title: "fetchHistoriesAsync",

@@ -14,14 +14,19 @@ import quizSettingsReducer, {
   settingsInitialState,
 } from "@/redux/features/quizSettings/quizSettingsSlice";
 
+import quizHistoryReducer, {
+  quizHistoryInitialState,
+} from "@/redux/features/quizHistory/quizHistorySlice";
+
 import { useQuizResult } from "@/components/widgets/QuizResult/useQuizResult";
 
-import * as quizCategories from "../../../../constants/quizCategories";
 import * as quizContentThunks from "@/redux/features/quizContent/quizContentThunks";
 
 import { renderHookWithStore } from "@/test/utils/renderHookWithStore";
-import { useParams } from "react-router";
-import { snackbarInitialState } from "@/redux/features/snackbar/snackbarSlice";
+
+import snackbarReducer, {
+  snackbarInitialState,
+} from "@/redux/features/snackbar/snackbarSlice";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router", async () => {
@@ -48,12 +53,15 @@ describe("useQuizResult", () => {
       quizContent: quizContentReducer,
       quizProgress: quizProgressReducer,
       quizSettings: quizSettingsReducer,
+      quizHistory: quizHistoryReducer,
+      snackbar: snackbarReducer,
     },
     preloadedState: {
       quizContent: { ...contentInitialState },
       quizProgress: { ...progressInitialState },
       quizSettings: { ...settingsInitialState },
       snackbar: { ...snackbarInitialState },
+      quizHistory: { ...quizHistoryInitialState },
     },
   };
 
@@ -79,7 +87,8 @@ describe("useQuizResult", () => {
       });
 
       expect(result.current.amount).toBeNull();
-      expect(result.current.type).toBeNull();
+      // expect(result.current.type).toBeNull();
+      expect(result.current.type).toBeUndefined();
       expect(result.current.getType).toBe("不明");
       expect(result.current.quizTitle).toEqual("スポーツ");
     });

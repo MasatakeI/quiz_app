@@ -12,7 +12,7 @@ export const addHistoryAsync = createModelThunk(
   async ({ resultData }, thunkApi) => {
     const history = await addHistory(resultData);
 
-    thunkApi.dispatch(showSnackbar("クイズ結果の保存に成功しました"));
+    thunkApi.dispatch(showSnackbar("クイズ結果を保存しました"));
     return history;
   },
   {

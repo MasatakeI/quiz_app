@@ -18,8 +18,6 @@ const quizHistorySlice = createSlice({
   name: "quizHistory",
   initialState: quizHistoryInitialState,
 
-  reducers: {},
-
   extraReducers: (builder) => {
     builder
 

@@ -1,0 +1,105 @@
+/* カード全体のコンテナ */
+.history-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  margin-bottom: 20px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  grid-template-columns: 1fr auto;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.history-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* 日付とレベルを横並びにするヘッダー部分 */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.history-date {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* レベル（難易度）のチップ */
+.history-difficulty,
+.history-category {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background-color: #edf2f7;
+  color: #4a5568;
+  text-transform: uppercase;
+}
+
+/* ジャンル（カテゴリ） */
+/* .history-category {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3748;
+} */
+
+/* スコア表示エリア */
+.history-stats {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 15px;
+  background-color: #f7fafc;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.history-stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.history-label {
+  font-size: 0.7rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 10px;
+}
+
+.history-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4a5568;
+}
+
+/* 正答率の強調 */
+.history-accuracy-highlight {
+  color: #48bb78; /* ResultSummaryの正解色 */
+  font-size: 1.25rem;
+}
+.history-delete-button {
+  border: none;
+  background-color: inherit;
+  cursor: pointer;
+  color: #a0aec0;
+  transform: scale(0.8);
+  transition: all ease 0.2s;
+}
+
+.history-delete-button:hover {
+  color: #f56565;
+  transform: translateY(-1px);
+}

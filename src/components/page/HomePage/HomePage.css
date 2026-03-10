@@ -6,8 +6,9 @@
   margin: 40px auto;
   padding: 2rem;
   text-align: center;
-  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN",
-    "Hiragino Sans", sans-serif;
+  font-family:
+    "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    sans-serif;
   background-color: #ffffff;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -37,7 +38,6 @@
 
 /* セレクションセクション（Grid部分） */
 .select-sections {
-  margin-top: 2rem !important;
   margin-bottom: 3rem !important;
 }
 

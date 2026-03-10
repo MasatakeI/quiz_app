@@ -3,15 +3,23 @@
 import { screen } from "@testing-library/react";
 import { describe, test, expect, vi, beforeEach } from "vitest";
 
-import QuizResult from "../../../../components/widgets/QuizResult/QuizResult";
+import QuizResult from "@/components/widgets/QuizResult/QuizResult";
 import { renderWithStore } from "@/test/utils/renderWithStore";
 
-import { contentInitialState } from "@/redux/features/quizContent/quizContentSlice";
-import { progressInitialState } from "@/redux/features/quizProgress/quizProgressSlice";
-import { settingsInitialState } from "@/redux/features/quizSettings/quizSettingsSlice";
-import quizContentReducer from "@/redux/features/quizContent/quizContentSlice";
-import quizProgressReducer from "@/redux/features/quizProgress/quizProgressSlice";
-import quizSettingsReducer from "@/redux/features/quizSettings/quizSettingsSlice";
+import quizContentReducer, {
+  contentInitialState,
+} from "@/redux/features/quizContent/quizContentSlice";
+import quizProgressReducer, {
+  progressInitialState,
+} from "@/redux/features/quizProgress/quizProgressSlice";
+import quizSettingsReducer, {
+  settingsInitialState,
+} from "@/redux/features/quizSettings/quizSettingsSlice";
+
+import quizHistoryReducer, {
+  quizHistoryInitialState,
+} from "@/redux/features/quizHistory/quizHistorySlice";
+
 import userEvent from "@testing-library/user-event";
 
 // ---mocks---
@@ -45,6 +53,7 @@ describe("QuizResult.jsxのテスト", () => {
       quizContent: quizContentReducer,
       quizProgress: quizProgressReducer,
       quizSettings: quizSettingsReducer,
+      quizHistory: quizHistoryReducer,
     },
     preloadedState: {
       quizContent: {
@@ -74,14 +83,15 @@ describe("QuizResult.jsxのテスト", () => {
         ...settingsInitialState,
         category: "sports",
       },
+      quizHistory: { ...quizHistoryInitialState },
     },
   };
 
-  test("子コンポーネントが描写される", () => {
+  test("子コンポーネントが描写される", async () => {
     renderWithStore(<QuizResult />, commonOptions);
 
     //QuizResultVies.jsx
-    expect(screen.getByText("スポーツクイズ 結果")).toBeInTheDocument();
+    expect(await screen.findByText("スポーツクイズ 結果")).toBeInTheDocument();
     //ResultSummary.jsx
     expect(screen.getByTestId("result-summary")).toBeInTheDocument();
 
@@ -89,13 +99,16 @@ describe("QuizResult.jsxのテスト", () => {
       name: "ホームへ戻る",
     });
     const retryButtons = screen.getAllByRole("button", {
-      name: "同じジャンルでもう1度",
+      name: "同じ条件でもう1度",
     });
 
+    const historyButton = screen.getByRole("button", { name: "記録を見る" });
+
     expect(goHomeButtons[0]).toBeInTheDocument();
-    expect(goHomeButtons).toHaveLength(2);
+    expect(goHomeButtons).toHaveLength(1);
     expect(retryButtons[0]).toBeInTheDocument();
-    expect(retryButtons).toHaveLength(2);
+    expect(retryButtons).toHaveLength(1);
+    expect(historyButton).toBeInTheDocument();
   });
 
   test("ホームへ戻るボタンを押すとhandleGoHomeが呼ばれる", async () => {
@@ -126,10 +139,23 @@ describe("QuizResult.jsxのテスト", () => {
     const { dispatchSpy } = renderWithStore(<QuizResult />, commonOptions);
 
     const retryButtons = screen.getAllByRole("button", {
-      name: "同じジャンルでもう1度",
+      name: "同じ条件でもう1度",
     });
     await user.click(retryButtons[0]);
 
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  test("記録を見るボタンを押すと navigateが呼ばれる", async () => {
+    const user = userEvent.setup();
+    renderWithStore(<QuizResult />, commonOptions);
+
+    const historyButton = screen.getByRole("button", {
+      name: "記録を見る",
+    });
+
+    await user.click(historyButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/quiz/history");
   });
 });

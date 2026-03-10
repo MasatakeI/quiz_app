@@ -19,7 +19,7 @@ export const buildHistory = ({
     date: {
       toDate: () => date,
     },
-    expectedDate: format(date, "yyyy/MM/dd HH:mm"),
+    expectedDate: format(date, "yyyy/MM/dd"),
 
     difficulty,
     score,

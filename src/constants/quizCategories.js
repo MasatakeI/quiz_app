@@ -9,7 +9,7 @@ export const CATEGORY_MAP = {
   music: 12,
 };
 
-export const quizTitles = {
+export const QUIZ_TITLE_MAP = {
   sports: "スポーツ",
   general: "常識",
   entertainment: "エンタメ",
@@ -19,5 +19,5 @@ export const quizTitles = {
 };
 
 export const getQuizTitle = (category) => {
-  return quizTitles[category];
+  return QUIZ_TITLE_MAP[category];
 };
