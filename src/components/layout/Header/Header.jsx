@@ -23,7 +23,7 @@ const Header = () => {
 
   return (
     <div role="banner" className={`header ${isScrolled ? "scrolled" : ""}`}>
-      <h1 className="logo" onClick={handleGoHome} style={{ cursor: "pointer" }}>
+      <h1 className="logo" onClick={handleGoHome}>
         クイズアプリ
       </h1>
 

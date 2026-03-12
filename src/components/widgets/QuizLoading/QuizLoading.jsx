@@ -13,8 +13,8 @@ import { fetchQuizzesAsync } from "@/redux/features/quizContent/quizContentThunk
 
 import { useNavigationHelper } from "@/hooks/useNavigationHelper";
 
-import Button from "../../common/Button/Button";
-import LoadingSpinner from "../../common/LoadingSpinner/LoadingSpinner";
+import Button from "@/components/common/Button/Button";
+import LoadingSpinner from "@/components/common/LoadingSpinner/LoadingSpinner";
 
 const QuizLoading = () => {
   const dispatch = useDispatch();

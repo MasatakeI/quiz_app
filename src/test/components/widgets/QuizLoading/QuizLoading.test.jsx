@@ -13,15 +13,19 @@ import quizProgressReducer, {
   progressInitialState,
 } from "@/redux/features/quizProgress/quizProgressSlice";
 
-import quizSettingsReducer from "@/redux/features/quizSettings/quizSettingsSlice";
+import quizSettingsReducer, {
+  settingsInitialState,
+} from "@/redux/features/quizSettings/quizSettingsSlice";
+import quizHistoryReducer, {
+  quizHistoryInitialState,
+} from "@/redux/features/quizHistory/quizHistorySlice";
 
 import { renderWithStore } from "@/test/utils/renderWithStore";
 
 import * as quizContentThunks from "@/redux/features/quizContent/quizContentThunks";
-import { settingsInitialState } from "@/redux/features/quizSettings/quizSettingsSlice";
 import { useSearchParams } from "react-router";
 
-vi.mock("../../../../components/common/LoadingSpinner/LoadingSpinner", () => ({
+vi.mock("@/components/common/LoadingSpinner/LoadingSpinner", () => ({
   default: () => <div data-testid="loading-spinner"></div>,
 }));
 
@@ -51,11 +55,13 @@ describe("QuizLoading.jsxのテスト", () => {
       quizContent: quizContentReducer,
       quizProgress: quizProgressReducer,
       quizSettings: quizSettingsReducer,
+      quizHistory: quizHistoryReducer,
     },
     preloadedState: {
-      quizContent: { ...contentInitialState },
+      quizContent: { ...contentInitialState, quizzes: [] },
       quizProgress: { ...progressInitialState },
       quizSettings: { ...settingsInitialState },
+      quizHistory: { ...quizHistoryInitialState },
     },
   };
 

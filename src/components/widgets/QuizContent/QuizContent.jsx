@@ -5,7 +5,6 @@ import "./QuizContent.css";
 
 import { useQuizContent } from "./useQuizContent";
 
-import BackToHomeLink from "../../common/BackToHomeLink/BackToHomeLink";
 import QuizAnswerAlert from "./QuizAnswerAlert";
 import QuizAnswers from "./QuizAnswers";
 import QuizContentView from "./QuizContentView";
@@ -14,7 +13,6 @@ const QuizContent = () => {
   const {
     selectAnswer,
     handleNext,
-    handleGoHome,
     quizResult,
     canPost,
     answers,
@@ -29,6 +27,8 @@ const QuizContent = () => {
     title,
     getType,
     indexMap,
+
+    progress,
   } = useQuizContent();
 
   return (
@@ -43,6 +43,7 @@ const QuizContent = () => {
         currentIndex={currentIndex}
         numberOfCorrects={numberOfCorrects}
         numberOfIncorrects={numberOfIncorrects}
+        progress={progress}
       />
 
       <QuizAnswerAlert quizResult={quizResult} onNext={handleNext} />
@@ -55,8 +56,6 @@ const QuizContent = () => {
         selectedAnswer={quizResult?.selected}
         correctAnswer={quizResult?.correct}
       />
-
-      <BackToHomeLink linkHandler={handleGoHome} />
     </div>
   );
 };

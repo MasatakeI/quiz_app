@@ -24,9 +24,9 @@ describe("QuizResultView", () => {
       />,
     );
     expect(screen.getByText("スポーツクイズ 結果")).toBeInTheDocument();
-    expect(screen.getByText("Level: かんたん")).toBeInTheDocument();
-    expect(screen.getByText("Type: 4択")).toBeInTheDocument();
-    expect(screen.getByText("Total: 10")).toBeInTheDocument();
+    expect(screen.getByText("Level かんたん")).toBeInTheDocument();
+    expect(screen.getByText("Type 4択")).toBeInTheDocument();
+    expect(screen.getByText("Total 10")).toBeInTheDocument();
     expect(screen.getByText("30%")).toBeInTheDocument();
     expect(screen.getByText("Accuracy")).toBeInTheDocument();
 

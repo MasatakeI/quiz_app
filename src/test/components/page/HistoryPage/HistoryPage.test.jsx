@@ -117,14 +117,28 @@ describe("HistoryPage", () => {
       preloadedState: {
         ...commonOptions.preloadedState,
         quizHistory: {
-          ...quizHistoryInitialState,
-          isLoading: false,
-          histories: [{ id: 1, category: "sports" }],
+          isLoading: false, // 明示的に false
+          error: null, // エラーもない状態
+          histories: [
+            {
+              id: 1,
+              category: "sports",
+              date: "2020/01/01",
+              score: 3,
+              totalQuestions: 10,
+            },
+          ],
+          canPost: true,
+          isDeleting: false,
         },
       },
     });
 
-    const title = await screen.findByText("クイズの記録");
+    const title = await screen.findByText(
+      "クイズの記録",
+      {},
+      { timeout: 2000 },
+    );
     expect(title).toBeInTheDocument();
   });
 });

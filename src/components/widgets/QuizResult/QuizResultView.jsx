@@ -50,11 +50,11 @@ const QuizResultView = ({
       </div>
 
       <div className="result-view-conditions">
-        <span className="condition-badge">Total: {amount}</span>
+        <span className="condition-badge">Total {amount}</span>
         <span className="condition-badge difficulty">
-          Level: {currentDifficulty}
+          Level {currentDifficulty}
         </span>
-        <span className="condition-badge type">Type: {getType}</span>
+        <span className="condition-badge type">Type {getType}</span>
       </div>
     </div>
   );

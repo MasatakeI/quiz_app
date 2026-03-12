@@ -42,17 +42,17 @@ const QuizHistoryItem = ({
         <span className="history-category">
           {QUIZ_TITLE_MAP[historyCategory]}
         </span>
+        <span className="history-difficulty">{TYPE_LABELS[historyType]}</span>
         <span className="history-difficulty">
           {DIFFICULTY_LABELS[historyDifficulty]}
         </span>
-        <span className="history-difficulty">{TYPE_LABELS[historyType]}</span>
+        <span className="history-difficulty">{historyTotalQuestions}問</span>
       </div>
+
       <div className="history-stats">
         <div className="history-stat-item">
           <span className="history-label">Score</span>
-          <span className="history-value">
-            {historyScore}/{historyTotalQuestions}
-          </span>
+          <span className="history-value">{historyScore}</span>
         </div>
         <div className="history-stat-item">
           <span className="history-label">Accuracy</span>

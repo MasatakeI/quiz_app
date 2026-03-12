@@ -52,7 +52,7 @@ describe("QuizHistory", () => {
         histories: [
           {
             id: 1,
-            date: "2020/01/01",
+            date: "2020/01/01 12:00",
             category: "sports",
             score: 3,
             totalQuestions: 10,
@@ -68,12 +68,12 @@ describe("QuizHistory", () => {
     renderWithStore(<QuizHistory />, commonOption);
 
     expect(screen.getByText("クイズの記録")).toBeInTheDocument();
-    expect(screen.getByText("sports")).toBeInTheDocument();
+    expect(screen.getByText("スポーツ")).toBeInTheDocument();
   });
 
-  test("historiesが0件の時 メッセージとホームへ戻るボタンが表示される", async () => {
-    const user = userEvent.setup();
-    const { dispatchSpy } = renderWithStore(<QuizHistory />, {
+  test("historiesが0件の時 メッセージとホームへ戻るボタンが表示される", () => {
+    userEvent.setup();
+    renderWithStore(<QuizHistory />, {
       ...commonOption,
       preloadedState: {
         ...commonOption.preloadedState,
@@ -86,6 +86,22 @@ describe("QuizHistory", () => {
     expect(
       screen.getByText(/記録がありません クイズに回答後 記録してください/),
     ).toBeInTheDocument();
+
+    const goHomeButton = screen.getByRole("button", { name: "ホームへ戻る" });
+    expect(goHomeButton).toBeInTheDocument();
+  });
+
+  test("ホームへ戻るボタンを押すと handleGoHomeが呼ばれる", async () => {
+    const user = userEvent.setup();
+    const { dispatchSpy } = renderWithStore(<QuizHistory />, {
+      ...commonOption,
+      preloadedState: {
+        ...commonOption.preloadedState,
+        quizHistory: {
+          ...quizHistoryInitialState,
+        },
+      },
+    });
 
     const goHomeButton = screen.getByRole("button", { name: "ホームへ戻る" });
 
@@ -146,29 +162,5 @@ describe("QuizHistory", () => {
     await user.click(cancelButton);
 
     expect(dispatchSpy).not.toHaveBeenCalled();
-  });
-
-  test("ホームへ戻るボタンを押すと handleGoHomeが呼ばれる", async () => {
-    const user = userEvent.setup();
-
-    const { dispatchSpy } = renderWithStore(<QuizHistory />, commonOption);
-
-    const goHomeButtons = screen.getAllByRole("button", {
-      name: "ホームへ戻る",
-    });
-
-    await user.click(goHomeButtons[0]);
-
-    expect(mockNavigate).toHaveBeenCalledWith("/");
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "quizContent/resetQuizContent",
-      }),
-    );
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "quizSettings/resetQuizSettings",
-      }),
-    );
   });
 });

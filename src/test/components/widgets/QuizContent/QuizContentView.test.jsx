@@ -4,7 +4,7 @@ import { screen, render } from "@testing-library/react";
 
 import { describe, test, expect, vi } from "vitest";
 
-import QuizContentView from "../../../../components/widgets/QuizContent/QuizContentView";
+import QuizContentView from "@/components/widgets/QuizContent/QuizContentView";
 
 describe("QuizContentView.jsx", () => {
   const defaultProps = {

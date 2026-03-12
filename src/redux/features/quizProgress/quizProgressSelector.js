@@ -46,6 +46,7 @@ export const selectTransilateCurrentDifficulty = createSelector(
 export const selectIsQuizInProgress = createSelector(
   [selectAllQuizzes, selectCurrentIndex],
   (quizzes, currentIndex) => {
+    if (!quizzes || quizzes.length === 0) return false;
     return quizzes.length > 0 && currentIndex < quizzes.length;
   },
 );
@@ -53,7 +54,16 @@ export const selectIsQuizInProgress = createSelector(
 export const selectIsQuizFinished = createSelector(
   [selectAllQuizzes, selectCurrentIndex],
   (quizzes, currentIndex) => {
+    if (!quizzes || quizzes.length === 0) return false;
     return quizzes.length > 0 && currentIndex >= quizzes.length;
+  },
+);
+
+export const selectQuizProgressPercent = createSelector(
+  [selectAllQuizzes, selectCurrentIndex],
+  (quizzes, currentIndex) => {
+    if (!quizzes || quizzes.length === 0) return false;
+    return (currentIndex / quizzes.length) * 100;
   },
 );
 

@@ -6,7 +6,7 @@ import {
   selectCurrentQuiz,
   selectShuffledAnswers,
   selectTransilateCurrentDifficulty,
-  selectQuizFinished,
+  selectIsQuizFinished,
 } from "@/redux/features/quizProgress/quizProgressSelector";
 import { contentInitialState } from "@/redux/features/quizContent/quizContentSlice";
 
@@ -94,9 +94,9 @@ describe("quizProgressSelector", () => {
     });
   });
 
-  describe("selectQuizFinished", () => {
+  describe("selectIsQuizFinished", () => {
     test("クイズが終了したかを返す:終了していない場合", () => {
-      const result = selectQuizFinished(prev);
+      const result = selectIsQuizFinished(prev);
       expect(result).toBe(false);
     });
     test("クイズが終了したかを返す:終了してた場合", () => {
@@ -104,7 +104,7 @@ describe("quizProgressSelector", () => {
         quizContent: { ...prev.quizContent },
         quizProgress: { ...prev.quizProgress, currentIndex: 3 },
       };
-      const result = selectQuizFinished(finishedState);
+      const result = selectIsQuizFinished(finishedState);
       expect(result).toBe(true);
     });
 
@@ -114,7 +114,7 @@ describe("quizProgressSelector", () => {
         quizProgress: { ...prev.quizProgress, currentIndex: 1 },
       };
 
-      const result = selectQuizFinished(oneQuizState);
+      const result = selectIsQuizFinished(oneQuizState);
       expect(result).toBe(true);
     });
     test("クイズが1問の場合の境界値:終了していない場合", () => {
@@ -123,7 +123,7 @@ describe("quizProgressSelector", () => {
         quizProgress: { ...prev.quizProgress, currentIndex: 0 },
       };
 
-      const result = selectQuizFinished(oneQuizState);
+      const result = selectIsQuizFinished(oneQuizState);
       expect(result).toBe(false);
     });
   });

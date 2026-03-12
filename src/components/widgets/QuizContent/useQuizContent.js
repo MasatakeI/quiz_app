@@ -17,6 +17,7 @@ import {
   selectNumberOfCorrects,
   selectNumberOfIncorrects,
   selectCurrentQuiz,
+  selectQuizProgressPercent,
 } from "@/redux/features/quizProgress/quizProgressSelector";
 
 import { useParams, useSearchParams } from "react-router";
@@ -38,6 +39,8 @@ export const useQuizContent = () => {
 
   const shuffledAnswers = useSelector(selectShuffledAnswers);
   const currentDifficulty = useSelector(selectTransilateCurrentDifficulty);
+
+  const progress = useSelector(selectQuizProgressPercent);
 
   const currentIndex = useSelector(selectCurrentIndex);
   const numberOfCorrects = useSelector(selectNumberOfCorrects);
@@ -109,5 +112,7 @@ export const useQuizContent = () => {
     title,
     getType,
     indexMap,
+
+    progress,
   };
 };

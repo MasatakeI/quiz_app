@@ -1,5 +1,6 @@
 import React from "react";
 import "./QuizContentView.css";
+import Linear from "@/components/common/Linear/Linear";
 
 const QuizContentView = ({
   amount,
@@ -10,6 +11,7 @@ const QuizContentView = ({
   numberOfIncorrects,
   title,
   getType,
+  progress,
 }) => {
   if (!currentQuiz || !currentQuiz.question) return null;
   return (
@@ -20,6 +22,7 @@ const QuizContentView = ({
         <div>Level {currentDifficulty}</div>
         <div>タイプ {getType}</div>
       </div>
+      <Linear progress={progress} />
       <p className="quiz-question">
         Q{currentIndex + 1}. {currentQuiz.question}
       </p>

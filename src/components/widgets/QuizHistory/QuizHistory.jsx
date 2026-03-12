@@ -39,7 +39,7 @@ const QuizHistory = () => {
   return (
     <div>
       <h1 className="title">クイズの記録</h1>
-      <Button onClickHandler={handleGoHome}>ホームへ戻る</Button>
+
       <Box sx={{ flexGrow: 1 }} className="history-container">
         <Grid container spacing={2}>
           {histories.map((his) => {
@@ -68,8 +68,6 @@ const QuizHistory = () => {
           })}
         </Grid>
       </Box>
-
-      {/* <Button onClickHandler={handleGoHome}>ホームへ戻る</Button> */}
 
       <Modal
         isOpen={isModalOpen}

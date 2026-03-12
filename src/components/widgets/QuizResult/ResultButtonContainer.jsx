@@ -42,7 +42,7 @@ const ResultButtonContainer = ({
         <Grid container spacing={2}>
           {BUTTON_CONFIGS.map((btn) => {
             return (
-              <Grid key={btn.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+              <Grid key={btn.id} size={{ xs: 6, lg: 4 }}>
                 <Button
                   variant={btn.variant}
                   onClickHandler={handlers[btn.key]}

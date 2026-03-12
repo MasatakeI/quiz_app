@@ -12,21 +12,10 @@
   border-radius: 50%;
 }
 
-.header-button.active {
-  background-color: #ffd700;
-  color: #1b2f4a;
-  /* box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); */
-  transform: scale(1); /* 少し大きくして強調 */
-}
-
-/* hover スタイルとの兼ね合い */
+.header-button:hover,
+.header-button.active,
 .header-button.active:hover {
-  /* background-color: #ffcc00; */
-  transform: scale(1) translateY(-1px);
-}
-
-.header-button:hover {
-  transform: translateY(-1px) scale(0.9);
+  transform: translateY(-1px) scale(1);
   color: #1b2f4a;
   background-color: #fff;
 }

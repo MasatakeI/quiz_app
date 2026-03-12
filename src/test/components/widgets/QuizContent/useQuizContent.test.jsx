@@ -4,15 +4,18 @@ import { act } from "@testing-library/react";
 
 import quizProgressReducer, {
   progressInitialState,
-} from "../../../../redux/features/quizProgress/quizProgressSlice";
+} from "@/redux/features/quizProgress/quizProgressSlice";
 import quizContentReducer, {
   contentInitialState,
-} from "../../../../redux/features/quizContent/quizContentSlice";
+} from "@/redux/features/quizContent/quizContentSlice";
 import quizSettingsReducer, {
   settingsInitialState,
 } from "@/redux/features/quizSettings/quizSettingsSlice";
+import quizHistoryReducer, {
+  quizHistoryInitialState,
+} from "@/redux/features/quizHistory/quizHistorySlice";
 
-import { useQuizContent } from "../../../../components/widgets/QuizContent/useQuizContent";
+import { useQuizContent } from "@/components/widgets/QuizContent/useQuizContent";
 import { renderHookWithStore } from "@/test/utils/renderHookWithStore";
 
 vi.mock("react-router", async () => {
@@ -35,11 +38,13 @@ describe("useQuizContent.js", () => {
       quizContent: quizContentReducer,
       quizProgress: quizProgressReducer,
       quizSettings: quizSettingsReducer,
+      quizHistory: quizHistoryReducer,
     },
     preloadedState: {
       quizContent: { ...contentInitialState },
       quizProgress: { ...progressInitialState },
       quizSettings: { ...settingsInitialState },
+      quizHistory: { ...quizHistoryInitialState },
     },
   };
 
