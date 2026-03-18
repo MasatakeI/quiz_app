@@ -1,16 +1,19 @@
 import React, { useEffect } from "react";
+import "./HistoryPage.css";
 
 import QuizHistory from "@/components/widgets/QuizHistory/QuizHistory";
+import LoadingSpinner from "@/components/common/LoadingSpinner/LoadingSpinner";
+import Button from "@/components/common/Button/Button";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectHistoryError,
   selectHistoryIsLoading,
 } from "@/redux/features/quizHistory/quizHistorySelector";
 import { fetchHistoriesAsync } from "@/redux/features/quizHistory/quizHistoryThunks";
-import LoadingSpinner from "@/components/common/LoadingSpinner/LoadingSpinner";
-import Button from "@/components/common/Button/Button";
 import { selectUser } from "@/redux/features/auth/authSelector";
-import AuthForm from "@/components/widgets/AuthForm/AuthForm";
+import { openAuthModal } from "@/redux/features/auth/authSlice";
+import { useNavigationHelper } from "@/hooks/useNavigationHelper";
 
 const HistoryPage = () => {
   const dispatch = useDispatch();
@@ -18,20 +21,29 @@ const HistoryPage = () => {
   const error = useSelector(selectHistoryError);
   const user = useSelector(selectUser);
 
+  const { handleGoHome } = useNavigationHelper();
+
   const userId = user?.uid;
 
   useEffect(() => {
     if (user && user.uid) {
-      // 引数なしで呼ぶ（Thunk側で最新のstateからuidを取るため）
       dispatch(fetchHistoriesAsync());
     }
   }, [dispatch, user]); // userId ではなく user オブジェクト全体を監視
 
   if (!userId) {
     return (
-      <>
-        <p>履歴を見るにはログインしてください。</p>
-      </>
+      <div className="no-user-container">
+        <h3>履歴を見るには 新規登録 / ログイン してください</h3>
+        <div className="no-user">
+          <Button onClickHandler={() => dispatch(openAuthModal())}>
+            新規登録 / ログイン
+          </Button>
+          <Button onClickHandler={handleGoHome} variant="tertiary">
+            ホームへ戻る
+          </Button>
+        </div>
+      </div>
     );
   }
 

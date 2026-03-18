@@ -2,13 +2,17 @@
 
 import { configureStore } from "@reduxjs/toolkit";
 
-import { rootReducer } from "./rootReducer";
 import { snackbarMiddleware } from "../middleware/snackbarMiddleware";
 
-const store = configureStore({
-  reducer: rootReducer,
+import { persistStore } from "redux-persist";
+import { persistedReducer } from "./rootReducer";
+
+export const store = configureStore({
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(snackbarMiddleware),
+    getDefaultMiddleware({ serializableCheck: false }).concat(
+      snackbarMiddleware,
+    ),
 });
 
-export default store;
+export const persistor = persistStore(store);

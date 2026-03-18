@@ -52,9 +52,12 @@ export const useHomePage = () => {
         value: type,
         onChange: (v) => {
           dispatch(updateSettings({ key: "type", value: v }));
-          dispatch(
-            updateSettings({ key: "amount", value: v === "boolean" ? 5 : 10 }),
-          );
+
+          if (v === "boolean") {
+            dispatch(updateSettings({ key: "amount", value: 5 }));
+          } else {
+            dispatch(updateSettings({ key: "amount", value: amount || 10 }));
+          }
         },
         array: types,
         error: settingError?.field === "type",

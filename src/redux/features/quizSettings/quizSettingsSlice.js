@@ -3,10 +3,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 export const settingsInitialState = {
-  category: "",
-  type: "",
-  difficulty: "",
-  amount: "",
+  category: "sports",
+  type: "multiple",
+  difficulty: "easy",
+  amount: "10",
   settingError: { message: "", field: "" },
 };
 

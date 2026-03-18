@@ -18,7 +18,14 @@ import {
   selectIsAuthModalOpen,
   selectUser,
 } from "./redux/features/auth/authSelector";
-import { closeAuthModal } from "./redux/features/auth/authSlice";
+import {
+  clearUser,
+  closeAuthModal,
+  setUser,
+} from "./redux/features/auth/authSlice";
+import { onAuthStateChanged } from "firebase/auth";
+
+import { auth } from "./firebase";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -33,6 +40,23 @@ const App = () => {
       dispatch(closeAuthModal());
     }
   }, [dispatch, user]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch(
+          setUser({
+            uid: user.uid,
+            email: user.email,
+          }),
+        );
+      } else {
+        dispatch(clearUser());
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
 
   return (
     <div className="app">
