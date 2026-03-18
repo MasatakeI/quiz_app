@@ -5,6 +5,7 @@ import quizProgressReducer from "../features/quizProgress/quizProgressSlice";
 import quizSettingsReducer from "../features/quizSettings/quizSettingsSlice";
 import snackbarReducer from "@/redux/features/snackbar/snackbarSlice";
 import quizHistoryReducer from "@/redux/features/quizHistory/quizHistorySlice";
+import authReducer from "@/redux/features/auth/authSlice";
 
 export const rootReducer = combineReducers({
   quizContent: quizContentReducer,
@@ -12,4 +13,5 @@ export const rootReducer = combineReducers({
   quizSettings: quizSettingsReducer,
   snackbar: snackbarReducer,
   quizHistory: quizHistoryReducer,
+  auth: authReducer,
 });

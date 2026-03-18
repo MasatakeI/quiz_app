@@ -3,7 +3,6 @@
 import { createSlice, isRejectedWithValue } from "@reduxjs/toolkit";
 import {
   signUpUserAsync,
-  signInAnonymouslyUserAsync,
   signInUserAsync,
   signOutUserAsync,
 } from "./authThunks";
@@ -12,17 +11,14 @@ export const authInitialState = {
   user: null,
   isLoading: false,
   error: null,
-  isAuthChecked: false,
+  authChecked: false,
+  isAuthModalOpen: false,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState: authInitialState,
-
   reducers: {
-    clearUser: (state) => {
-      state.user = null;
-    },
     clearAuthError: (state) => {
       state.error = null;
     },
@@ -30,56 +26,50 @@ const authSlice = createSlice({
       state.user = action.payload;
     },
     setAuthChecked: (state) => {
-      state.isAuthChecked = true;
+      state.authChecked = true;
+    },
+    clearUser: (state) => {
+      state.user = null;
+    },
+    openAuthModal: (state) => {
+      state.isAuthModalOpen = true;
+    },
+    closeAuthModal: (state) => {
+      state.isAuthModalOpen = false;
     },
   },
 
   extraReducers: (builder) => {
     builder
       //signUp
-      .addCase(signUpUserAsync.pending, (state, action) => {
+      .addCase(signUpUserAsync.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(signUpUserAsync.fulfilled, (state, action) => {
-        state.user = action.payload;
         state.isLoading = false;
+        state.user = action.payload;
         state.error = null;
       })
+
       //signIn
-      .addCase(signInUserAsync.pending, (state, action) => {
+      .addCase(signInUserAsync.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
+        state.user = null;
       })
       .addCase(signInUserAsync.fulfilled, (state, action) => {
         state.user = action.payload;
-        state.isLoading = false;
         state.error = null;
-      })
-      //signInAnonymous
-      .addCase(signInAnonymouslyUserAsync.pending, (state, action) => {
-        state.isLoading = true;
-      })
-      .addCase(signInAnonymouslyUserAsync.fulfilled, (state, action) => {
-        state.user = action.payload;
         state.isLoading = false;
-        state.error = null;
       })
 
-      //signOut
-      .addCase(signOutUserAsync.pending, (state, action) => {
-        state.isLoading = true;
-      })
-      .addCase(signOutUserAsync.fulfilled, (state, action) => {
+      //singOut
+      .addCase(signOutUserAsync.fulfilled, (state) => {
         state.user = null;
       })
-
-      //rejected共通処理
+      // rejected共通処理
       .addMatcher(
-        isRejectedWithValue(
-          signUpUserAsync,
-          signInAnonymouslyUserAsync,
-          signInUserAsync,
-          signOutUserAsync,
-        ),
+        isRejectedWithValue(signUpUserAsync, signInUserAsync),
         (state, action) => {
           state.isLoading = false;
           state.error = action.payload;
@@ -88,7 +78,13 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthError, clearUser, setAuthChecked, setUser } =
-  authSlice.actions;
+export const {
+  clearAuthError,
+  setAuthChecked,
+  setUser,
+  clearUser,
+  openAuthModal,
+  closeAuthModal,
+} = authSlice.actions;
 
 export default authSlice.reducer;

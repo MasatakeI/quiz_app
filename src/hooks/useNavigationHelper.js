@@ -8,7 +8,14 @@ import {
   setQuizSettings,
 } from "@/redux/features/quizSettings/quizSettingsSlice";
 import { selectAllHistories } from "@/redux/features/quizHistory/quizHistorySelector";
-import { selectIsQuizInProgress } from "@/redux/features/quizProgress/quizProgressSelector";
+import {
+  selectIsQuizInProgress,
+  selectResultData,
+} from "@/redux/features/quizProgress/quizProgressSelector";
+import { addHistoryAsync } from "@/redux/features/quizHistory/quizHistoryThunks";
+import { selectUser } from "@/redux/features/auth/authSelector";
+import { openAuthModal } from "@/redux/features/auth/authSlice";
+import { signOutUserAsync } from "@/redux/features/auth/authThunks";
 
 export const useNavigationHelper = () => {
   const dispatch = useDispatch();
@@ -16,6 +23,8 @@ export const useNavigationHelper = () => {
 
   const histories = useSelector(selectAllHistories);
   const isQuizInProgress = useSelector(selectIsQuizInProgress);
+  const resultData = useSelector(selectResultData);
+  const user = useSelector(selectUser);
 
   const confirmNavigation = () => {
     if (isQuizInProgress) {
@@ -41,6 +50,18 @@ export const useNavigationHelper = () => {
     navigate("/quiz/history");
   };
 
+  const handleSaveHistory = async () => {
+    if (!user) {
+      dispatch(openAuthModal());
+      return;
+    }
+    dispatch(addHistoryAsync({ resultData }));
+  };
+
+  const handleOpenModal = () => {
+    dispatch(openAuthModal());
+  };
+
   const handleRetryFromHistory = (historyId) => {
     const targetHistory = histories.find((h) => h.id === historyId);
 
@@ -64,5 +85,17 @@ export const useNavigationHelper = () => {
     );
   };
 
-  return { handleGoHome, handleGoHistory, handleRetryFromHistory };
+  const handleSignOut = async () => {
+    dispatch(signOutUserAsync());
+    navigate("/");
+  };
+
+  return {
+    handleGoHome,
+    handleGoHistory,
+    handleRetryFromHistory,
+    handleSaveHistory,
+    handleOpenModal,
+    handleSignOut,
+  };
 };

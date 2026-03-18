@@ -1,7 +1,7 @@
 //useQuizResult.js
 
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import {
   selectIsQuizFinished,
@@ -23,20 +23,26 @@ import {
   INDEX_MAP,
   TYPE_LABELS,
 } from "@/constants/quizTranslations";
+import { selectUser } from "@/redux/features/auth/authSelector";
+
+import { closeAuthModal } from "@/redux/features/auth/authSlice";
 
 export const useQuizResult = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { category } = useParams();
-  const { handleGoHome, handleGoHistory } = useNavigationHelper();
+  const { handleGoHome, handleGoHistory, handleSaveHistory } =
+    useNavigationHelper();
 
   const numberOfCorrects = useSelector(selectNumberOfCorrects);
   const numberOfIncorrects = useSelector(selectNumberOfIncorrects);
   const userAnswers = useSelector(selectUserAnswers);
+  const user = useSelector(selectUser);
 
   const resultData = useSelector(selectResultData);
-  const historyCanPost = useSelector(selectHistoryCanPost);
   const quizFinished = useSelector(selectIsQuizFinished);
+  const historyCanPost = useSelector(selectHistoryCanPost);
 
   const hasSaved = useRef(false);
   const [params] = useSearchParams();
@@ -53,11 +59,21 @@ export const useQuizResult = () => {
   };
 
   useEffect(() => {
-    if (quizFinished && historyCanPost && resultData && !hasSaved.current) {
-      dispatch(addHistoryAsync({ resultData }));
+    if (
+      quizFinished &&
+      user &&
+      historyCanPost &&
+      resultData &&
+      !hasSaved.current
+    ) {
+      dispatch(addHistoryAsync({ resultData }))
+        .unwrap()
+        .then(() => navigate("/quiz/history"));
+
       hasSaved.current = true;
+      dispatch(closeAuthModal());
     }
-  }, [dispatch, historyCanPost, quizFinished, resultData]);
+  }, [dispatch, user, historyCanPost, quizFinished, resultData, navigate]);
 
   return {
     quizTitle,
@@ -67,6 +83,8 @@ export const useQuizResult = () => {
     handleGoHome,
     handleRetry,
     handleGoHistory,
+    handleSaveHistory,
+
     amount,
     getType,
     getDifficulty,

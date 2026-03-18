@@ -5,7 +5,7 @@ import "./QuizHistory.css";
 
 import QuizHistoryItem from "./QuizHistoryItem";
 import Button from "@/components/common/Button/Button";
-import Modal from "@/components/common/Modal/Modal";
+import DeleteModal from "@/components/common/DeleteModal/DeleteModal";
 
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllHistories } from "@/redux/features/quizHistory/quizHistorySelector";
@@ -69,7 +69,7 @@ const QuizHistory = () => {
         </Grid>
       </Box>
 
-      <Modal
+      <DeleteModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={"この記録を削除しますか?"}
@@ -78,6 +78,7 @@ const QuizHistory = () => {
           setIsModalOpen(false);
           setTargetId(null);
         }}
+        confirmTitle={"削除"}
       />
     </div>
   );

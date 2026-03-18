@@ -3,12 +3,25 @@ import "./Header.css";
 import HeaderIconButton from "./HeaderIconButton";
 
 import { useNavigationHelper } from "@/hooks/useNavigationHelper";
-import { faHistory, faHome } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRightToBracket,
+  faArrowUpFromBracket,
+  faHistory,
+  faHome,
+} from "@fortawesome/free-solid-svg-icons";
 import { useLocation } from "react-router";
+import { useSelector } from "react-redux";
+import {
+  selectIsAuthModalOpen,
+  selectUser,
+} from "@/redux/features/auth/authSelector";
 
 const Header = () => {
-  const { handleGoHome, handleGoHistory } = useNavigationHelper();
+  const { handleGoHome, handleGoHistory, handleOpenModal, handleSignOut } =
+    useNavigationHelper();
   const location = useLocation();
+  const isAuthModalOpen = useSelector(selectIsAuthModalOpen);
+  const user = useSelector(selectUser);
 
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -39,6 +52,12 @@ const Header = () => {
           title={"クイズの記録を見る"}
           onClick={handleGoHistory}
           isActive={location.pathname === "/quiz/history"}
+        />
+        <HeaderIconButton
+          icon={!user ? faArrowRightToBracket : faArrowUpFromBracket}
+          title={!user ? "ログイン" : "ログアウト"}
+          onClick={!user ? handleOpenModal : handleSignOut}
+          isActive={isAuthModalOpen}
         />
       </div>
     </div>

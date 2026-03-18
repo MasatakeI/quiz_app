@@ -13,7 +13,14 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function Modal({ isOpen, onClose, title, message, onConfirm }) {
+export default function DeleteModal({
+  isOpen,
+  onClose,
+  title,
+  message,
+  onConfirm,
+  confirmTitle,
+}) {
   return (
     <React.Fragment>
       <Dialog
@@ -32,7 +39,7 @@ export default function Modal({ isOpen, onClose, title, message, onConfirm }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>キャンセル</Button>
-          <Button onClick={onConfirm}>削除</Button>
+          <Button onClick={onConfirm}>{confirmTitle}</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>

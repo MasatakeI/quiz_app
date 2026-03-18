@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   orderBy,
   doc,
+  where,
 } from "firebase/firestore";
 
 import { QuizHistoryError } from "./errors/quizHistory/quizHistoryError";
@@ -19,21 +20,35 @@ import { mapQuizHistoryError } from "./errors/quizHistory/mapQuizHistoryError";
 import { format } from "date-fns";
 
 export const createHistory = (id, data) => {
-  if (
-    !data ||
-    // typeof data.category !== "string" ||
-    typeof data.difficulty !== "string" ||
-    typeof data.score !== "number" ||
-    typeof data.totalQuestions !== "number" ||
-    typeof data.date?.toDate !== "function"
-  ) {
+  // if (
+  //   !data ||
+  //   // typeof data.category !== "string" ||
+  //   typeof data.difficulty !== "string" ||
+  //   typeof data.score !== "number" ||
+  //   typeof data.totalQuestions !== "number" ||
+  //   typeof data.date?.toDate !== "function"
+  // ) {
+  //   throw new QuizHistoryError({
+  //     code: QUIZ_HISTORY_ERROR_CODE.INVALID_DATA,
+  //     message: "無効なデータです",
+  //   });
+  // }
+
+  console.log("Checking data for ID:", id, data); // これで中身を全出しする
+
+  if (!data || !data.date) {
+    console.error("Data or Date is missing for ID:", id);
     throw new QuizHistoryError({
       code: QUIZ_HISTORY_ERROR_CODE.INVALID_DATA,
       message: "無効なデータです",
     });
   }
 
-  const dateObj = format(data.date.toDate(), "yyyy/MM/dd HH:mm");
+  // toDateが存在するか安全に確認
+  const timestamp = data.date.toDate ? data.date.toDate() : new Date(data.date);
+  const dateObj = format(timestamp, "yyyy/MM/dd HH:mm");
+
+  // const dateObj = format(data.date.toDate(), "yyyy/MM/dd HH:mm");
 
   return {
     id,
@@ -50,18 +65,18 @@ export const createHistory = (id, data) => {
   };
 };
 
-export const addHistory = async (resultData) => {
+export const addHistory = async (userId, resultData) => {
   try {
-    if (!resultData.score || typeof resultData.score !== "number") {
+    if (typeof resultData.score !== "number") {
       throw new QuizHistoryError({
         code: QUIZ_HISTORY_ERROR_CODE.VALIDATION,
         message: "スコア情報が不足しています",
       });
     }
 
-    // const { category, difficulty, score, totalQuestions } = resultData;
     const postData = {
       ...resultData,
+      userId,
       date: serverTimestamp(),
     };
 
@@ -85,15 +100,20 @@ export const addHistory = async (resultData) => {
   }
 };
 
-export const fetchHistories = async () => {
+export const fetchHistories = async (userId) => {
   try {
-    const q = query(quizHistoryRef, orderBy("date", "desc"));
+    const q = query(
+      quizHistoryRef,
+      where("userId", "==", userId),
+      orderBy("date", "desc"),
+    );
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.docs.length) {
       return [];
     }
 
+    // fetchHistories 内
     return querySnapshot.docs.map((doc) => {
       return createHistory(doc.id, doc.data());
     });

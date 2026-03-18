@@ -6,27 +6,48 @@ import {
   fetchHistories,
   deleteHistory,
 } from "@/models/QuizHistoryModel";
+import { selectUser } from "../auth/authSelector";
 
 export const addHistoryAsync = createModelThunk(
   "quizHistory/addHistory",
   async ({ resultData }, thunkApi) => {
-    const history = await addHistory(resultData);
+    const state = thunkApi.getState();
+    const user = selectUser(state);
+    const userId = user.uid;
 
-    thunkApi.dispatch(showSnackbar("クイズ結果を保存しました"));
+    const dataWithUser = {
+      ...resultData,
+      userId,
+    };
+
+    const history = await addHistory(userId, dataWithUser);
+
+    thunkApi.dispatch(showSnackbar("クラウドに結果を保存しました"));
     return history;
   },
   {
     condition: (_, { getState }) => {
-      const { quizHistory } = getState();
+      const { quizHistory, auth } = getState();
       if (!quizHistory.canPost) return false;
+
+      if (!auth.user) {
+        return false;
+      }
     },
   },
 );
 
 export const fetchHistoriesAsync = createModelThunk(
   "quizHistory/fetchHistories",
-  async () => {
-    const histories = await fetchHistories();
+  async (_, thunkApi) => {
+    const state = thunkApi.getState();
+    const user = selectUser(state);
+    const userId = user.uid;
+
+    if (!userId) return [];
+
+    const histories = await fetchHistories(userId);
+
     return histories;
   },
   {

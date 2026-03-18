@@ -23,6 +23,7 @@ const QuizResult = () => {
     handleGoHome,
     handleRetry,
     handleGoHistory,
+    handleSaveHistory,
   } = useQuizResult();
 
   return (
@@ -40,6 +41,7 @@ const QuizResult = () => {
         onNavigate={handleGoHome}
         onRetry={handleRetry}
         onNavigateToHistory={handleGoHistory}
+        onSaveHistory={handleSaveHistory}
       />
 
       <ResultSummary userAnswers={userAnswers} indexMap={INDEX_MAP} />
@@ -48,6 +50,7 @@ const QuizResult = () => {
         onNavigate={handleGoHome}
         onRetry={handleRetry}
         onNavigateToHistory={handleGoHistory}
+        onSaveHistory={handleSaveHistory}
       />
     </div>
   );
